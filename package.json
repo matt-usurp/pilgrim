@@ -1,0 +1,27 @@
+{
+  "version": "0.1.0",
+  "name": "@matt-usurp/pilgrim",
+  "description": "A bootstrap framework for serverless providers",
+  "author": "Matthew Rose <matt.usurp@gmail.com>",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "homepage": "https://github.com/matt-usurp/pilgrim#readme",
+  "bugs": {
+    "url": "https://github.com/matt-usurp/pilgrim/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/matt-usurp/pilgrim.git"
+  },
+  "keywords": [
+    "bootstrapper",
+    "serverless",
+    "aws"
+  ],
+  "dependencies": {
+    "@types/aws-lambda": "^8.10.70"
+  },
+  "devDependencies": {
+    "typescript": "^4.1.3"
+  }
+}

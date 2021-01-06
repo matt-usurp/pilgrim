@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "module": "commonjs",
+    "target": "esnext",
+
+    "strict": true,
+    "alwaysStrict": true,
+
+    "allowJs": false,
+    "checkJs": false,
+    "sourceMap": true,
+    "removeComments": false,
+    "declaration": true,
+
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": false,
+
+    "noErrorTruncation": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noEmit": true,
+
+    "keyofStringsOnly": true,
+  },
+
+  "include": [
+    "src/**/*.ts",
+    "src/*.ts",
+  ],
+
+  "exclude": [
+    "node_modules",
+  ],
+}
