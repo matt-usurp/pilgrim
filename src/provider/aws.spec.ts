@@ -18,6 +18,7 @@ describe('src/provider/aws.ts', (): void => {
           return 'assert:response';
         });
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const response = await handler({} as any, {} as any, {} as any);
 
       expect(response).toBe('assert:response');
@@ -34,6 +35,7 @@ describe('src/provider/aws.ts', (): void => {
           return 'assert:response';
         });
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const response = await handler({} as any, {} as any, {} as any);
 
       expect(response).toBe('middleware:assert:response');
