@@ -1,0 +1,22 @@
+name: Build
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+
+      - run: npm ci
+      - run: make code
+      - run: make test
+      - run: make build
+      - run: make publish.dry

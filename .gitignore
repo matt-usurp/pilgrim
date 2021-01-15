@@ -1,2 +1,6 @@
+# Language requirements.
 /node_modules
-/lib
+
+# Build directories and tooling.
+/.eslintcache
+/build/workspace
