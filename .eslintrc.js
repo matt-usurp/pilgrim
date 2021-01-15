@@ -15,7 +15,6 @@ module.exports = {
     'plugin:jest/recommended',
   ],
 
-
   env: {
     'jest/globals': true,
   },

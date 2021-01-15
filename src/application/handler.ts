@@ -5,7 +5,11 @@ import { Middleware, MiddlewareNextFunction } from './middleware';
 /**
  * The handler function that executes the main functions.
  */
-export type Handler<Context, Result> = (
+export type Handler<
+  Context,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Result = any,
+> = (
   tooling: {
     context: Context;
   },
@@ -25,7 +29,7 @@ export type HandlerWrapper<
   BaseContext extends ContextConstraint,
   ProviderInvocationFunction extends HandlerWrapperProviderFunction,
 > = (
-  executor: HandlerWrapperExecutor<GivenInbound, BaseContext, any>,
+  executor: HandlerWrapperExecutor<GivenInbound, BaseContext, BaseContext>,
 ) => ProviderInvocationFunction;
 
 /**
@@ -46,10 +50,12 @@ export class HandlerBuilder<
   CurrentContext extends ContextConstraint,
   ComposeFunction extends HandlerWrapperProviderFunction,
 > {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private middlewares: Middleware<CurrentInbound, ContextConstraint, any>[] = [];
 
   public constructor(
     public readonly provider: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private readonly wrapper: HandlerWrapper<any, any, any>,
   ) {}
 
@@ -72,14 +78,14 @@ export class HandlerBuilder<
   }
 
   public handle<
-    GivenHandler extends Handler<UnknownGivenContext, any>,
+    GivenHandler extends Handler<UnknownGivenContext>,
     UnknownGivenContext extends CurrentContext,
   >(handler: GivenHandler): ComposeFunction {
     return this.wrapper(async ({ inbound, context }) => {
-      const wrapped = this.middlewares.reduceRight<MiddlewareNextFunction<any, any>>(
+      const wrapped = this.middlewares.reduceRight<MiddlewareNextFunction>(
         (previous, middleware) => {
           return async(context) => {
-            const next: MiddlewareNextFunction<any, any> = (newcontext) => {
+            const next: MiddlewareNextFunction = (newcontext) => {
               const merged = deepmerge(context, newcontext);
 
               return previous(merged);
