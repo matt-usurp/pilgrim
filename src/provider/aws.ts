@@ -48,7 +48,7 @@ export class AmazonWebServiceApplication {
    */
   public lambda<K extends keyof ProviderExecutionTypes, Provider extends ProviderExecutionTypes[K] = ProviderExecutionTypes[K]>(
     provider: K,
-  ): HandlerBuilder<Provider[0], LambdaContext, LambdaHandlerEnhanced> {
+  ): HandlerBuilder<LambdaInbound<Provider[0]>, LambdaContext, LambdaHandlerEnhanced> {
     return new HandlerBuilder(provider, wrapper);
   };
 }

@@ -2,6 +2,7 @@ import { Context as LambdaProvidedContext } from 'aws-lambda';
 import { Handler } from '../../application/handler';
 import { Middleware } from '../../application/middleware';
 import { ObjectLike } from '../../common/object';
+import { ExecutionTypes } from '@matt-usurp/pilgrim/provider/aws';
 
 /**
  * An inbound implementation that is passed to all middlewares.
@@ -14,6 +15,11 @@ export type LambdaInbound<GivenEvent> = {
   context: LambdaProvidedContext;
   event: GivenEvent;
 };
+
+/**
+ * A pseudo-type function for creating LambdaInbound types using the execution identifier.
+ */
+export type CreateLambdaInbound<K extends keyof ExecutionTypes> = LambdaInbound<ExecutionTypes[K][0]>;
 
 /**
  * The context that will be auto-prepared for use with the middlewares and handlers.
@@ -37,3 +43,11 @@ export type LambdaMiddleware<
   NextContext extends ObjectLike,
   GivenContext extends ObjectLike = ObjectLike,
 > = Middleware<GivenInbound, NextContext, GivenContext>;
+
+/**
+ * A lambda middleware that doesn't consume the inbound event.
+ */
+export type LambdaMiddlewareInboundless<
+  NextContext extends ObjectLike,
+  GivenContext extends ObjectLike = ObjectLike,
+> = LambdaMiddleware<LambdaInbound<any>, NextContext, GivenContext>;

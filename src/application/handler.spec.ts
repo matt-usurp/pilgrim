@@ -1,12 +1,7 @@
 import { HandlerBuilder, HandlerWrapper } from './handler';
 
-type TestInbound = {
-  test: true;
-};
-
-type TestContext = {
-  foo: string;
-};
+type TestInbound = { test: true; };
+type TestContext = { foo: string; };
 
 type TestWrapperInvocationFunction = () => any;
 type TestWrapper = HandlerWrapper<TestInbound, TestContext, TestWrapperInvocationFunction>;
@@ -79,23 +74,49 @@ describe('src/application/handler.ts', (): void => {
       it('given no middleware, response from handler is given as execution response', async () => {
         const builder: TestHandlerBuilder = new HandlerBuilder('test:provider', composingTextWrapper);
         const handler = builder.handle(async() => {
-          return 'assert:response';
+          return 'handler-response';
         });
 
         const response = await handler();
 
-        expect(response).toBe('wrapper("assert:response")');
+        expect(response).toBe('wrapper("handler-response")');
       });
 
-      it.skip('given single middleware, middleware changes response from handler, new response given as execution response', async () => {
-        expect(false).toBe(true);
+      it('given single middleware, middleware changes response from handler, new response given as execution response', async () => {
+        const builder: TestHandlerBuilder = new HandlerBuilder('test:provider', composingTextWrapper);
+        const handler = builder
+          .use(async ({ context, next }) => {
+            const previous = await next(context);
+
+            return `middleware:${previous}`;
+          })
+          .handle(async () => {
+            return 'handler-response';
+          });
+
+        const response = await handler();
+
+        expect(response).toBe('wrapper("middleware:handler-response")');
       });
 
-      it.skip('given single middleware, middleware changes given context, handler receives new context', async () => {
-        expect(false).toBe(true);
+      it('given single middleware, middleware changes given context, handler receives new context', async () => {
+        const builder: TestHandlerBuilder = new HandlerBuilder('test:provider', passThroughWrapper);
+        const handler = builder
+          .use(async({ context, next } ) => {
+            return next({
+              theme: 'dark',
+            });
+          })
+          .handle(async({ context }) => {
+            return `handler-response:${context.theme}`;
+          });
+
+        const response = await handler();
+
+        expect(response).toEqual('handler-response:dark');
       });
 
-      it.skip('given multiple middleware, each can change response of previous, given as execution response', async () => {
+      it('given multiple middleware, each can change response of previous, given as execution response', async () => {
         const builder: TestHandlerBuilder = new HandlerBuilder('test:provider', passThroughWrapper);
         const handler = builder
           .use(async({ context, next } ) => {

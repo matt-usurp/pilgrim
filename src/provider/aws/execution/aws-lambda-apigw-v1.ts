@@ -5,6 +5,6 @@ declare module '@matt-usurp/pilgrim/provider/aws' {
   } from 'aws-lambda';
 
   interface ExecutionTypes {
-    readonly 'aws:apigw:proxy': [Event, Result];
+    readonly 'aws:apigw:proxy:v1': [Event, Result];
   }
 }
