@@ -7,7 +7,7 @@ describe('src/provider/aws.ts', (): void => {
     it('lambda() passes provider to HandlerBuilder', (): void => {
       const builder = application.lambda('aws:apigw:proxy:v1');
 
-      expect(builder.provider).toBe('aws:apigw:proxy');
+      expect(builder.provider).toBe('aws:apigw:proxy:v1');
     });
   });
 
