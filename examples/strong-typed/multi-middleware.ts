@@ -1,12 +1,12 @@
 import { AmazonWebServiceApplication } from '../../src/provider/aws';
-import { CreateLambdaInbound, LambdaMiddleware, LambdaMiddlewareInboundless } from '../../src/provider/aws/implementation';
+import { CreateLambdaInbound, LambdaMiddleware, LambdaMiddlewareValidatorInboundless } from '../../src/provider/aws/implementation';
 
 type Inbound = CreateLambdaInbound<'aws:apigw:proxy:v2'>;
 
 type MiddlewareParseFilter = LambdaMiddleware<Inbound, { filters: { search: string }; }>;
 type MiddlewarePagination = LambdaMiddleware<Inbound, { pagination: { page: number; limit: number }; }>;
 
-type MiddlewareFilterValidator = LambdaMiddlewareInboundless<{ validated: boolean; }, { filters: { search: string }; }>;
+type MiddlewareFilterValidator = LambdaMiddlewareValidatorInboundless<{ filters: { search: string }; }>;
 
 declare const app: AmazonWebServiceApplication;
 
@@ -25,6 +25,4 @@ app.lambda('aws:apigw:proxy:v2')
     context.pagination.limit;
 
     context.filters.search;
-
-    context.validated;
   });

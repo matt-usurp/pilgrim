@@ -51,3 +51,19 @@ export type LambdaMiddlewareInboundless<
   NextContext extends ObjectLike,
   GivenContext extends ObjectLike = ObjectLike,
 > = LambdaMiddleware<LambdaInbound<any>, NextContext, GivenContext>;
+
+/**
+ * A lambda middleware that is suited for validation of given context or inbound.
+ */
+export type LambdaMiddlewareValidator<
+  GivenInbound extends LambdaInbound<any>,
+  GivenContext extends ObjectLike,
+> = LambdaMiddleware<GivenInbound, GivenContext, GivenContext>;
+
+/**
+ * A lambda middleware that is suited for validation of given context only.
+ * This middleware is not typed to know about the given inbound.
+ */
+export type LambdaMiddlewareValidatorInboundless<
+  GivenContext extends ObjectLike,
+> = LambdaMiddlewareInboundless<GivenContext, GivenContext>;
