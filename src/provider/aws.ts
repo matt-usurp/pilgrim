@@ -15,16 +15,22 @@ declare module '@matt-usurp/pilgrim/provider/aws' {
 }
 
 export type LambdaHandlerEnhanced = LambdaProvidedHandler<ProviderExecutionTypes[keyof ProviderExecutionTypes][0]>;
-export type LambdaWrapper<GivenEvent> = HandlerWrapper<LambdaInbound<GivenEvent>, LambdaHandlerEnhanced>;
+export type LambdaWrapper<GivenEvent> = HandlerWrapper<LambdaInbound<GivenEvent>, LambdaContext, LambdaHandlerEnhanced>;
 
 /**
  * A typical implementation of the lambda wrapper.
  */
-export const wrapper: LambdaWrapper<any> = (instance) => async (event, context) => {
-  return instance({
+export const wrapper: LambdaWrapper<any> = (executor) => async (event, context) => {
+  return executor({
     inbound: {
       event,
       context,
+    },
+
+    context: {
+      request: {
+        id: context.awsRequestId,
+      },
     },
   });
 };
