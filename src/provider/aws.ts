@@ -1,7 +1,7 @@
 import { ExecutionTypes as ProviderExecutionTypes } from '@matt-usurp/pilgrim/provider/aws';
 import { Handler as LambdaProvidedHandler } from 'aws-lambda';
 import { HandlerBuilder, HandlerWrapper } from '../application/handler';
-import { LambdaContext, LambdaInbound } from './aws/implementation';
+import { LambdaContext, LambdaInbound, LambdaInboundConstraint } from './aws/implementation';
 
 /**
  * This is a fake module that can be used to extend the type of execution for a given provider.
@@ -11,16 +11,17 @@ import { LambdaContext, LambdaInbound } from './aws/implementation';
  * For implementations see the files under the "provider/aws/execution" directory.
  */
 declare module '@matt-usurp/pilgrim/provider/aws' {
+  // eslint-disable-next-line @typescript-eslint/no-empty-interface
   interface ExecutionTypes {}
 }
 
 export type LambdaHandlerEnhanced = LambdaProvidedHandler<ProviderExecutionTypes[keyof ProviderExecutionTypes][0]>;
-export type LambdaWrapper<GivenEvent> = HandlerWrapper<LambdaInbound<GivenEvent>, LambdaContext, LambdaHandlerEnhanced>;
+export type LambdaWrapper = HandlerWrapper<LambdaInboundConstraint, LambdaContext, LambdaHandlerEnhanced>;
 
 /**
  * A typical implementation of the lambda wrapper.
  */
-export const wrapper: LambdaWrapper<any> = (executor) => async (event, context) => {
+export const wrapper: LambdaWrapper = (executor) => async (event, context) => {
   return executor({
     inbound: {
       event,
@@ -50,5 +51,5 @@ export class AmazonWebServiceApplication {
     provider: K,
   ): HandlerBuilder<LambdaInbound<Provider[0]>, LambdaContext, LambdaHandlerEnhanced> {
     return new HandlerBuilder(provider, wrapper);
-  };
+  }
 }

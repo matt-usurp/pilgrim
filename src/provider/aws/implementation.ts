@@ -1,8 +1,8 @@
+import { ExecutionTypes } from '@matt-usurp/pilgrim/provider/aws';
 import { Context as LambdaProvidedContext } from 'aws-lambda';
+import { ContextConstraint } from '../../application/context';
 import { Handler } from '../../application/handler';
 import { Middleware } from '../../application/middleware';
-import { ObjectLike } from '../../common/object';
-import { ExecutionTypes } from '@matt-usurp/pilgrim/provider/aws';
 
 /**
  * An inbound implementation that is passed to all middlewares.
@@ -17,9 +17,16 @@ export type LambdaInbound<GivenEvent> = {
 };
 
 /**
+ * A representation of what an inbound can look like.
+ *
+ * @constraint This is a constraint type that should only be used in extends clauses.
+ */
+export type LambdaInboundConstraint = CreateLambdaInbound<keyof ExecutionTypes>;
+
+/**
  * A pseudo-type function for creating LambdaInbound types using the execution identifier.
  */
-export type CreateLambdaInbound<K extends keyof ExecutionTypes> = LambdaInbound<ExecutionTypes[K][0]>;
+export type CreateLambdaInbound<ExecutionTypeIdentifier extends keyof ExecutionTypes> = LambdaInbound<ExecutionTypes[ExecutionTypeIdentifier][0]>;
 
 /**
  * The context that will be auto-prepared for use with the middlewares and handlers.
@@ -33,31 +40,31 @@ export type LambdaContext = {
 /**
  * An implementation of handler specialised for lambda.
  */
-export type LambdaHandler<Context> = Handler<Context>;
+export type LambdaHandler<Context> = Handler<Context, void>;
 
 /**
  * An implementation of middleware specialised for lambda.
  */
 export type LambdaMiddleware<
-  GivenInbound extends LambdaInbound<any>,
-  NextContext extends ObjectLike,
-  GivenContext extends ObjectLike = ObjectLike,
+  GivenInbound extends LambdaInboundConstraint,
+  NextContext extends ContextConstraint,
+  GivenContext extends ContextConstraint = ContextConstraint,
 > = Middleware<GivenInbound, NextContext, GivenContext>;
 
 /**
  * A lambda middleware that doesn't consume the inbound event.
  */
 export type LambdaMiddlewareInboundless<
-  NextContext extends ObjectLike,
-  GivenContext extends ObjectLike = ObjectLike,
-> = LambdaMiddleware<LambdaInbound<any>, NextContext, GivenContext>;
+  NextContext extends ContextConstraint,
+  GivenContext extends ContextConstraint = ContextConstraint,
+> = LambdaMiddleware<LambdaInboundConstraint, NextContext, GivenContext>;
 
 /**
  * A lambda middleware that is suited for validation of given context or inbound.
  */
 export type LambdaMiddlewareValidator<
-  GivenInbound extends LambdaInbound<any>,
-  GivenContext extends ObjectLike,
+  GivenInbound extends LambdaInboundConstraint,
+  GivenContext extends ContextConstraint,
 > = LambdaMiddleware<GivenInbound, GivenContext, GivenContext>;
 
 /**
@@ -65,5 +72,5 @@ export type LambdaMiddlewareValidator<
  * This middleware is not typed to know about the given inbound.
  */
 export type LambdaMiddlewareValidatorInboundless<
-  GivenContext extends ObjectLike,
+  GivenContext extends ContextConstraint,
 > = LambdaMiddlewareInboundless<GivenContext, GivenContext>;
