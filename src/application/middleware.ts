@@ -9,8 +9,10 @@ import { ContextConstraint } from './context';
  * This is done so that middleware types can contain partial contextual typing without needing to know about previous middlewares.
  */
 export type MiddlewareNextFunction<
-  GivenContext extends ContextConstraint,
-  FunctionResult,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  GivenContext extends ContextConstraint = any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  FunctionResult = any,
 > = (context: GivenContext) => Promise<FunctionResult>;
 
 /**
@@ -24,7 +26,8 @@ export type MiddlewareNextFunction<
 export type Middleware<
   GivenInbound,
   NextContext extends ObjectLike,
-  GivenContext extends ObjectLike = ObjectLike,
+  GivenContext extends ObjectLike,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Response = any,
 > = (
   tooling: {
