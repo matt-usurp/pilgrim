@@ -18,6 +18,18 @@ export type LambdaHandlerEnhanced = LambdaProvidedHandler<ProviderExecutionTypes
 export type LambdaWrapper<GivenEvent> = HandlerWrapper<LambdaInbound<GivenEvent>, LambdaHandlerEnhanced>;
 
 /**
+ * A typical implementation of the lambda wrapper.
+ */
+export const wrapper: LambdaWrapper<any> = (instance) => async (event, context) => {
+  return instance({
+    inbound: {
+      event,
+      context,
+    },
+  });
+};
+
+/**
  * An AWS application helper.
  */
 export class AmazonWebServiceApplication {
@@ -30,11 +42,7 @@ export class AmazonWebServiceApplication {
    */
   public lambda<K extends keyof ProviderExecutionTypes, Provider extends ProviderExecutionTypes[K] = ProviderExecutionTypes[K]>(
     provider: K,
-  ): HandlerBuilder<Provider[0], LambdaContext> {
-    const wrapper: LambdaWrapper<Provider[0]> = async (instance) => (event, context) => {
-      return instance({ inbound: { event, context } })
-    };
-
+  ): HandlerBuilder<Provider[0], LambdaContext, LambdaHandlerEnhanced> {
     return new HandlerBuilder(provider, wrapper);
   };
 }

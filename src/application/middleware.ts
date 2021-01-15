@@ -6,6 +6,7 @@ export type Middleware<
   GivenInbound,
   NextContext extends ObjectLike,
   GivenContext extends ObjectLike = ObjectLike,
+  Response = any,
 > = (
   tools: {
     inbound: GivenInbound,
