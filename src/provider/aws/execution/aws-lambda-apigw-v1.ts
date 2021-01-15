@@ -1,10 +1,10 @@
 declare module '@matt-usurp/pilgrim/provider/aws' {
   import {
-    APIGatewayProxyEvent as Event,
-    APIGatewayProxyResult as Result,
+    APIGatewayProxyEvent as ProxyEvent,
+    APIGatewayProxyResult as ProxyResult,
   } from 'aws-lambda';
 
   interface ExecutionTypes {
-    readonly 'aws:apigw:proxy:v1': [Event, Result];
+    readonly 'aws:apigw:proxy:v1': [ProxyEvent, ProxyResult];
   }
 }
