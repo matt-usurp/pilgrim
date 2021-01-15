@@ -39,7 +39,7 @@ export type HandlerWrapper<
  * Note, in all cases this will need a manually composed base context and the inbound.
  */
 export type HandlerWrapperExecutor<GivenInbound, BaseContext extends ContextConstraint, FunctionResult> = (
-  tools: {
+  tooling: {
     inbound: GivenInbound,
     context: BaseContext,
   },
