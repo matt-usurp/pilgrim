@@ -67,7 +67,7 @@ build: \
 	build.package.verify
 
 build.clean:
-	rm -rf dist
+	rm -rf build/workspace
 
 build.setup:
 	mkdir -p build/workspace
