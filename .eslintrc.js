@@ -46,6 +46,7 @@ module.exports = {
     ///
     ///
 
+    '@typescript-eslint/no-namespace': 'off',
     '@typescript-eslint/prefer-nullish-coalescing': ['error'],
     '@typescript-eslint/prefer-readonly': ['error'],
     '@typescript-eslint/promise-function-async': ['error'],
