@@ -1,5 +1,3 @@
-import { ObjectLike } from '../common/object';
-
 /**
  * A representation of what a context should look like.
  *
@@ -8,4 +6,4 @@ import { ObjectLike } from '../common/object';
  *
  * @constraint This is a constraint type that should only be used in extends clauses.
  */
-export type ContextConstraint = ObjectLike;
+export type ContextConstraint = Record<string, unknown>;
