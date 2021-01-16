@@ -1,4 +1,16 @@
 # --
+# -- Commit Message Linting
+# --
+
+.PHONY: \
+	commit.lint
+
+commit.lint:
+	npx commitlint \
+		--verbose \
+		--from "origin/main"
+
+# --
 # -- Code Formatting & Linting
 # --
 
