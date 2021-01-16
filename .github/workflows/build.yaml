@@ -18,7 +18,6 @@ jobs:
 
       - run: npm ci
       - run: make code
-      - run: make commit.lint
 
   tests:
     name: Tests
