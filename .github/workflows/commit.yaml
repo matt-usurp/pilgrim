@@ -29,4 +29,4 @@ jobs:
 
       # Manual construction of the commit lint command.
       # This means branches of branches should still work.
-      - run: npx commitlint --verbose --from "${{ github.event.pull_request.base.ref }}"
+      - run: npx commitlint --verbose --from "origin/${{ github.event.pull_request.base.ref }}"
