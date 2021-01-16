@@ -61,7 +61,7 @@ This means you can perform tasks to resolve information (in this case user id) a
 This can be used within our original code sample by adding a `use()` call.
 
 ```ts
-export target = app.lambda('aws:apigw:proxy:v2')
+export const target = app.lambda('aws:apigw:proxy:v2')
   .use(withUserData)
   .handler(async ({ context }) => {
     context.user.id; // what ever was resolved from middleware.
