@@ -13,7 +13,7 @@ export type Handler<
   tooling: {
     context: Context;
   },
-) => Promise<Result>
+) => Promise<Result>;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type HandlerWrapperProviderFunction = (...args: any[]) => any;
@@ -51,9 +51,9 @@ export class HandlerBuilder<
   ComposeFunction extends HandlerWrapperProviderFunction,
 > {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private middlewares: Middleware<CurrentInbound, ContextConstraint, any>[] = [];
+  private readonly middlewares: Middleware<CurrentInbound, ContextConstraint, any>[] = [];
 
-  public constructor(
+  public constructor (
     public readonly provider: string,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private readonly wrapper: HandlerWrapper<any, any, any>,
@@ -84,8 +84,8 @@ export class HandlerBuilder<
     return this.wrapper(async ({ inbound, context }) => {
       const wrapped = this.middlewares.reduceRight<MiddlewareNextFunction>(
         (previous, middleware) => {
-          return async(context) => {
-            const next: MiddlewareNextFunction = (newcontext) => {
+          return async (context) => {
+            const next: MiddlewareNextFunction = async (newcontext) => {
               const merged = deepmerge(context, newcontext);
 
               return previous(merged);
@@ -94,7 +94,7 @@ export class HandlerBuilder<
             return middleware({ inbound, context, next });
           };
         },
-        (context) => handler({ context }),
+        async (context) => handler({ context }),
       );
 
       return wrapped(context);
