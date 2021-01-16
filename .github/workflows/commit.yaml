@@ -1,0 +1,32 @@
+name: Commit
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+jobs:
+  linting:
+    name: Linting
+    runs-on: ubuntu-latest
+
+    steps:
+      # This will checkout for efficiency only a single commit and nothing else.
+      # We need all commits in the branch.
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      # Fetch the repository to be sure to be sure.
+      - run: git fetch
+
+      - uses: actions/setup-node@v2
+
+      - run: npm ci
+
+      # Manual construction of the commit lint command.
+      # This means branches of branches should still work.
+      - run: npx commitlint --verbose --from "${{ github.event.pull_request.base.ref }}"
