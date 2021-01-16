@@ -46,12 +46,12 @@ describe('src/application/handler.ts', (): void => {
       it('given wrapper that ignores executor, returns fixed value', async (): Promise<void> => {
         const wrapper: TestWrapper = () => async () => {
           return 'assert:wrapper:response';
-        }
+        };
 
         const builder = new HandlerBuilder('test:provider', wrapper);
         const handler = builder.handle(async () => {
           return 'ignored:handler:response';
-        })
+        });
 
         const result = await handler();
 
@@ -73,7 +73,7 @@ describe('src/application/handler.ts', (): void => {
 
       it('given no middleware, response from handler is given as execution response', async () => {
         const builder: TestHandlerBuilder = new HandlerBuilder('test:provider', composingTextWrapper);
-        const handler = builder.handle(async() => {
+        const handler = builder.handle(async () => {
           return 'handler-response';
         });
 
@@ -102,12 +102,12 @@ describe('src/application/handler.ts', (): void => {
       it('given single middleware, middleware changes given context, handler receives new context', async () => {
         const builder: TestHandlerBuilder = new HandlerBuilder('test:provider', passThroughWrapper);
         const handler = builder
-          .use(async({ next } ) => {
+          .use(async ({ next } ) => {
             return next({
               theme: 'dark',
             });
           })
-          .handle(async({ context }) => {
+          .handle(async ({ context }) => {
             return `handler-response:${context.theme}`;
           });
 
@@ -119,7 +119,7 @@ describe('src/application/handler.ts', (): void => {
       it('given multiple middleware, each can change response of previous, given as execution response', async () => {
         const builder: TestHandlerBuilder = new HandlerBuilder('test:provider', passThroughWrapper);
         const handler = builder
-          .use(async({ context, next } ) => {
+          .use(async ({ context, next } ) => {
             const previous = await next(context);
 
             return {
@@ -129,7 +129,7 @@ describe('src/application/handler.ts', (): void => {
               }
             };
           })
-          .use(async({ context, next} ) => {
+          .use(async ({ context, next} ) => {
             const previous = await next(context);
 
             return {
@@ -137,7 +137,7 @@ describe('src/application/handler.ts', (): void => {
               body: JSON.stringify(previous.body),
             };
           })
-          .handle(async() => {
+          .handle(async () => {
             return {
               headers: {},
               body: {}
@@ -157,14 +157,14 @@ describe('src/application/handler.ts', (): void => {
       it('given two middleware, altering contexts are merged for handler, handler recieves merged context', async () => {
         const builder: TestHandlerBuilder = new HandlerBuilder('test:provider', passThroughWrapper);
         const handler = builder
-          .use(async({ next } ) => {
+          .use(async ({ next } ) => {
             return next({
               headers: {
                 'content-type': 'text/html',
               }
-            })
+            });
           })
-          .use(async({ next} ) => {
+          .use(async ({ next} ) => {
             return next({
               headers: {
                 'content-type': 'application/json',
@@ -172,7 +172,7 @@ describe('src/application/handler.ts', (): void => {
               }
             });
           })
-          .handle(async({ context }) => {
+          .handle(async ({ context }) => {
             return context;
           });
 
@@ -190,7 +190,7 @@ describe('src/application/handler.ts', (): void => {
       it('given multiple middleware, altering contexts are deep merged, handler given deep merged context', async () => {
         const builder: TestHandlerBuilder = new HandlerBuilder('test:provider', passThroughWrapper);
         const handler = builder
-          .use(async({ next }) => {
+          .use(async ({ next }) => {
             return next({
               some: {
                 nested: {
@@ -199,9 +199,9 @@ describe('src/application/handler.ts', (): void => {
                   }
                 }
               }
-            })
+            });
           })
-          .use(async({ next }) => {
+          .use(async ({ next }) => {
             return next({
               some: {
                 nested: {
@@ -212,7 +212,7 @@ describe('src/application/handler.ts', (): void => {
               }
             });
           })
-          .use(async({ next }) => {
+          .use(async ({ next }) => {
             return next({
               some: {
                 nested: {
@@ -223,7 +223,7 @@ describe('src/application/handler.ts', (): void => {
               }
             });
           })
-          .handle(async({ context }) => {
+          .handle(async ({ context }) => {
             return context;
           });
 
@@ -246,22 +246,22 @@ describe('src/application/handler.ts', (): void => {
       it('given several middleware, execution order is as expected', async () => {
         const builder: TestHandlerBuilder = new HandlerBuilder('test:provider', composingTextWrapper);
         const handler = builder
-          .use(async({ context, next }) => {
+          .use(async ({ context, next }) => {
             const previous = await next(context);
 
             return `first:${previous}`;
           })
-          .use(async({ context, next }) => {
+          .use(async ({ context, next }) => {
             const previous = await next(context);
 
             return `second:${previous}`;
           })
-          .use(async({ context, next }) => {
+          .use(async ({ context, next }) => {
             const previous = await next(context);
 
             return `third:${previous}`;
           })
-          .handle(async() => {
+          .handle(async () => {
             return 'assert:response';
           });
 
