@@ -3,12 +3,22 @@
 # --
 
 .PHONY: \
-	code
+	code \
+	code.fix
 
 code:
 	npx eslint \
 		--cache \
 		--cache-location .eslintcache \
+		--format codeframe \
+			./src \
+			./examples
+
+code.fix:
+	npx eslint \
+		--cache \
+		--cache-location .eslintcache \
+		--fix \
 		--format codeframe \
 			./src \
 			./examples
