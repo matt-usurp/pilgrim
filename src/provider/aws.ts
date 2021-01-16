@@ -1,7 +1,11 @@
 import { ExecutionTypes as ProviderExecutionTypes } from '@matt-usurp/pilgrim/provider/aws';
 import { Handler as LambdaProvidedHandler } from 'aws-lambda';
 import { HandlerBuilder, HandlerWrapper } from '../application/handler';
-import { LambdaContext, LambdaInbound, LambdaInboundConstraint } from './aws/implementation';
+import { Lambda } from './aws/implementation';
+
+// Re-export the lambda namespace.
+// Providing a slightly better DUX for importing.
+export { Lambda };
 
 /**
  * This is a fake module that can be used to extend the type of execution for a given provider.
@@ -16,7 +20,7 @@ declare module '@matt-usurp/pilgrim/provider/aws' {
 }
 
 export type LambdaHandlerEnhanced = LambdaProvidedHandler<ProviderExecutionTypes[keyof ProviderExecutionTypes][0]>;
-export type LambdaWrapper = HandlerWrapper<LambdaInboundConstraint, LambdaContext, LambdaHandlerEnhanced>;
+export type LambdaWrapper = HandlerWrapper<Lambda.InboundConstraint, Lambda.Context, LambdaHandlerEnhanced>;
 
 /**
  * A typical implementation of the lambda wrapper.
@@ -49,7 +53,7 @@ export class AmazonWebServiceApplication {
    */
   public lambda<K extends keyof ProviderExecutionTypes, Provider extends ProviderExecutionTypes[K] = ProviderExecutionTypes[K]>(
     provider: K,
-  ): HandlerBuilder<LambdaInbound<Provider[0]>, LambdaContext, LambdaHandlerEnhanced> {
+  ): HandlerBuilder<Lambda.Inbound<Provider[0]>, Lambda.Context, LambdaHandlerEnhanced> {
     return new HandlerBuilder(provider, wrapper);
   }
 }
