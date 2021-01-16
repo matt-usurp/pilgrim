@@ -9,6 +9,10 @@ module.exports = {
     'jest',
   ],
 
+  parserOptions: {
+    project: './tsconfig.json',
+  },
+
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
