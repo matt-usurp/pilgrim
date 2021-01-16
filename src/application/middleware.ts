@@ -1,4 +1,3 @@
-import { ObjectLike } from '../common/object';
 import { ContextConstraint } from './context';
 
 /**
@@ -25,8 +24,8 @@ export type MiddlewareNextFunction<
  */
 export type Middleware<
   GivenInbound,
-  NextContext extends ObjectLike,
-  GivenContext extends ObjectLike,
+  NextContext extends ContextConstraint,
+  GivenContext extends ContextConstraint,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Response = any,
 > = (
