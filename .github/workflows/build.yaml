@@ -1,4 +1,4 @@
-name: Build
+name: Build & Validate
 
 on:
   pull_request:
@@ -8,7 +8,8 @@ on:
       - synchronize
 
 jobs:
-  build:
+  linting:
+    name: Linting
     runs-on: ubuntu-latest
 
     steps:
@@ -17,6 +18,30 @@ jobs:
 
       - run: npm ci
       - run: make code
+
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+
+      - run: npm ci
       - run: make test
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    needs:
+      - linting
+      - tests
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+
+      - run: npm ci
       - run: make build
       - run: make publish.dry
