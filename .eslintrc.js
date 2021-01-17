@@ -40,7 +40,7 @@ module.exports = {
     '@typescript-eslint/semi': ['error', 'always'],
 
     'space-before-function-paren': 'off',
-    '@typescript-eslint/space-before-function-paren': ['error', 'always'],
+    '@typescript-eslint/space-before-function-paren': ['error', 'never'],
 
     ///
     ///
