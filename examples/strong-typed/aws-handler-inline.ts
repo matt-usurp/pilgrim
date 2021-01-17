@@ -6,7 +6,7 @@ import { AmazonWebServiceApplication } from '../../src/provider/aws';
 declare const app: AmazonWebServiceApplication;
 
 const target = app.lambda('aws:apigw:proxy:v2')
-  .handle(async ({ context }) => {
+  .handle(async({ context }) => {
     context.request;
   });
 

@@ -12,9 +12,9 @@ describe('src/provider/aws.ts', (): void => {
   });
 
   describe('HandlerBuilder', (): void => {
-    it('no middleware', async () => {
+    it('no middleware', async() => {
       const handler = application.lambda('aws:apigw:proxy:v1')
-        .handle(async () => {
+        .handle(async() => {
           return 'assert:response';
         });
 
@@ -24,14 +24,14 @@ describe('src/provider/aws.ts', (): void => {
       expect(response).toBe('assert:response');
     });
 
-    it('composing middleware', async () => {
+    it('composing middleware', async() => {
       const handler = application.lambda('aws:apigw:proxy:v1')
-        .use(async ({ context, next }) => {
+        .use(async({ context, next }) => {
           const previous = await next(context);
 
           return `middleware:${previous}`;
         })
-        .handle(async () => {
+        .handle(async() => {
           return 'assert:response';
         });
 

@@ -23,7 +23,7 @@ const target = app.lambda('aws:apigw:proxy:v2')
   .use(withFilters)
   .use(withPagination)
   .use(withFilterValidation)
-  .handle(async ({ context }) => {
+  .handle(async({ context }) => {
     context.request;
 
     context.pagination.page;

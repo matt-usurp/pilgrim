@@ -25,7 +25,7 @@ export type LambdaWrapper = HandlerWrapper<Lambda.InboundConstraint, Lambda.Cont
 /**
  * A typical implementation of the lambda wrapper.
  */
-export const wrapper: LambdaWrapper = (executor) => async (event, context) => {
+export const wrapper: LambdaWrapper = (executor) => async(event, context) => {
   return executor({
     inbound: {
       event,
