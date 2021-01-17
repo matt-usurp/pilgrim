@@ -16,12 +16,12 @@ import { AmazonWebServiceApplication } from '@matt-usurp/pilgrim/provider/aws';
 const app = new AmazonWebServiceApplication();
 
 export target = app.lambda('aws:apigw:proxy:v2')
-  .handler(async ({ context }) => {
+  .handle(async ({ context }) => {
     // ..
   });
 ```
 
-The response from the chain (after `handler()` is called) is a function that can be executed by the provider (`AWS Lambda` in this case).
+The response from the chain (after `handle()` is called) is a function that can be executed by the provider (`AWS Lambda` in this case).
 A context is provided to our custom handler, but it has no knowledge of what called it and therefore does not have access to the event.
 To provide context to our handler we use middleware.
 
@@ -63,7 +63,7 @@ This can be used within our original code sample by adding a `use()` call.
 ```ts
 export const target = app.lambda('aws:apigw:proxy:v2')
   .use(withUserData)
-  .handler(async ({ context }) => {
+  .handle(async ({ context }) => {
     context.user.id; // what ever was resolved from middleware.
   });
 ```
