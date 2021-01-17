@@ -9,7 +9,7 @@ on:
 
 jobs:
   linting:
-    name: Linting
+    name: Commit Linting
     runs-on: ubuntu-latest
 
     steps:
