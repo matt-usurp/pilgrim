@@ -80,6 +80,8 @@ build.compile:
 	find build/workspace -type f -name "*.spec.d.ts" -delete
 
 build.compile.verify:
+	test ! -f build/workspace/application/handler.spec.js
+
 	test -f build/workspace/application/handler.js
 	test -f build/workspace/application/middleware.js
 	test -f build/workspace/provider/aws.js
