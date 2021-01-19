@@ -23,7 +23,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - run: npm ci
+      - run: npm ci --ignore-scripts
       - run: make code
 
   tests:
@@ -41,7 +41,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - run: npm ci
+      - run: npm ci --ignore-scripts
       - run: make test
 
   build:
@@ -63,6 +63,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - run: npm ci
+      - run: npm ci --ignore-scripts
       - run: make build
       - run: make publish.dry
