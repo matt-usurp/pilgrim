@@ -24,8 +24,14 @@ jobs:
       - run: git fetch
 
       - uses: actions/setup-node@v2
+      - uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
-      - run: npm ci
+      - run: npm ci --ignore-scripts
 
       # Manual construction of the commit lint command.
       # This means branches of branches should still work.
