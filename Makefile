@@ -114,11 +114,15 @@ package.build.package.verify:
 
 .PHONY: \
 	package \
+	package.publish \
 	package.publish.verify
 
 package: \
 	package.build \
 	package.publish.verify
+
+package.publish:
+	npm publish "./build/workspace"
 
 package.publish.verify:
 	npm publish "./build/workspace" \
