@@ -1,4 +1,27 @@
 # --
+# -- Change Log
+# --
+
+# The dependencies here are not installed in the package.json.
+# Instead we just use npx to download as needed.
+# Do not want to bloat the package file as it increases CI times.
+
+.PHONY:
+	changelog \
+	changelog.proof
+
+changelog:
+	npx standard-version \
+		--skip.commit \
+		--skip.tag
+
+changelog.proof:
+	npx standard-version \
+		--skip.commit \
+		--skip.tag \
+		--dry-run
+
+# --
 # -- Commit Message Linting
 # --
 
@@ -107,6 +130,7 @@ package.build.package.verify:
 	test -f build/workspace/package-lock.json
 
 	test -f build/workspace/README.md
+	test ! -f build/workspace/CHANGELOG.md
 
 # --
 # -- Package Publishing
@@ -115,15 +139,15 @@ package.build.package.verify:
 .PHONY: \
 	package \
 	package.publish \
-	package.publish.verify
+	package.publish.proof
 
 package: \
 	package.build \
-	package.publish.verify
+	package.publish.proof
 
 package.publish:
 	npm publish "./build/workspace"
 
-package.publish.verify:
+package.publish.proof:
 	npm publish "./build/workspace" \
 		--dry-run
