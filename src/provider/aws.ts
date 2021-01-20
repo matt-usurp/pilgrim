@@ -34,9 +34,9 @@ export class AmazonWebServiceApplication {
    * The final call should be the handle function which will wrap up the pipeline.
    * The response from the handle function should be exported and used as the function pointer in the lambda configuration.
    */
-  public lambda<K extends keyof LambdaEvents, Provider extends LambdaEvents[K] = LambdaEvents[K]>(
+  public lambda<K extends keyof LambdaEvents>(
     provider: K,
-  ): HandlerBuilder<LambdaInboundKind<Provider[0]>, Lambda.Context, LambdaHandlerEnhanced> {
+  ): HandlerBuilder<Lambda.Inbound<K>, Lambda.Context, LambdaHandlerEnhanced> {
     return new HandlerBuilder(provider, wrapper);
   }
 }
