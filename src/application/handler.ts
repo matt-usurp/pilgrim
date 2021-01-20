@@ -110,22 +110,10 @@ export class HandlerBuilder<
     UnknownGivenContext extends CurrentContext,
   >(handler: GivenHandler): ComposeFunction {
     return this.wrapper(async({ inbound, context }) => {
-      const wrapped = this.middlewares.reduceRight<MiddlewareNextFunction>(
-        (previous, middleware) => {
-          return async(context) => {
-            const next: MiddlewareNextFunction = async(newcontext) => {
-              const merged = deepmerge(context, newcontext);
+      const exector: MiddlewareNextFunction = async(context) => handler({ context });
+      const composed = this.build(inbound, exector);
 
-              return previous(merged);
-            };
-
-            return middleware({ inbound, context, next });
-          };
-        },
-        async(context) => handler({ context }),
-      );
-
-      return wrapped(context);
+      return composed(context);
     });
   }
 
@@ -144,22 +132,27 @@ export class HandlerBuilder<
     UnknownGivenContext extends CurrentContext,
   >(handler: GivenHandler): ComposeFunction {
     return this.wrapper(async({ inbound, context }) => {
-      const wrapped = this.middlewares.reduceRight<MiddlewareNextFunction>(
-        (previous, middleware) => {
-          return async(context) => {
-            const next: MiddlewareNextFunction = async(newcontext) => {
-              const merged = deepmerge(context, newcontext);
+      const exector: MiddlewareNextFunction = async(context) => handler({ inbound, context });
+      const composed = this.build(inbound, exector);
 
-              return previous(merged);
-            };
-
-            return middleware({ inbound, context, next });
-          };
-        },
-        async(context) => handler({ inbound, context }),
-      );
-
-      return wrapped(context);
+      return composed(context);
     });
+  }
+
+  /**
+   * Build a middleware wrapped executor function.
+   */
+  private build(inbound: GivenInbound, exector: MiddlewareNextFunction): MiddlewareNextFunction {
+    return this.middlewares.reduceRight<MiddlewareNextFunction>((previous, middleware) => {
+      return async(context) => {
+        const next: MiddlewareNextFunction = async(newcontext) => {
+          const merged = deepmerge(context, newcontext);
+
+          return previous(merged);
+        };
+
+        return middleware({ inbound, context, next });
+      };
+    }, exector);
   }
 }
