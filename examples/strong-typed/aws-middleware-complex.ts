@@ -3,16 +3,16 @@ import { AmazonWebServiceApplication, Lambda } from '../../src/provider/aws';
 /**
  * Inbounds are used to define the kind of execution context being used.
  */
-type Inbound = Lambda.CreateInbound<'aws:apigw:proxy:v2'>;
+type Inbound = Lambda.Inbound<'aws:apigw:proxy:v2'>;
 
 /**
  * Here we define a series of middleware that return fragments of a conceptual context.
  * When we provide them within `use()` statements the context is built up.
  * The handler can the make use of the combined context to perform some actions.
  */
-declare const withFilters: Lambda.Middleware.EventAware<Inbound, { filters: { search: string }; }>;
-declare const withPagination: Lambda.Middleware.EventAware<Inbound, { pagination: { page: number; limit: number }; }>;
-declare const withFilterValidation : Lambda.Middleware.EventlessValidator<{ filters: { search: string }; }>;
+declare const withFilters: Lambda.Middleware<Inbound, { filters: { search: string }; }>;
+declare const withPagination: Lambda.Middleware<Inbound, { pagination: { page: number; limit: number }; }>;
+declare const withFilterValidation : Lambda.Middleware.Validator.Eventless<{ filters: { search: string }; }>;
 
 /**
  * The AWS application instance that will be required.

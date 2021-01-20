@@ -1,5 +1,5 @@
 import { HandlerBuilder } from '../application/handler';
-import { Lambda, LambdaEvents, LambdaHandlerEnhanced, LambdaWrapper } from './aws/lambda';
+import { Lambda, LambdaEvents, LambdaHandlerEnhanced, LambdaInboundKind, LambdaWrapper } from './aws/lambda';
 
 // Re-export the lambda namespace.
 // Providing a slightly better DUX for importing.
@@ -8,7 +8,7 @@ export { Lambda };
 /**
  * A typical implementation of the lambda wrapper.
  */
-export const wrapper: LambdaWrapper = (executor) => async(event, context) => {
+const wrapper: LambdaWrapper = (executor) => async(event, context) => {
   return executor({
     inbound: {
       event,
@@ -36,7 +36,7 @@ export class AmazonWebServiceApplication {
    */
   public lambda<K extends keyof LambdaEvents, Provider extends LambdaEvents[K] = LambdaEvents[K]>(
     provider: K,
-  ): HandlerBuilder<Lambda.Inbound<Provider[0]>, Lambda.Context, LambdaHandlerEnhanced> {
+  ): HandlerBuilder<LambdaInboundKind<Provider[0]>, Lambda.Context, LambdaHandlerEnhanced> {
     return new HandlerBuilder(provider, wrapper);
   }
 }

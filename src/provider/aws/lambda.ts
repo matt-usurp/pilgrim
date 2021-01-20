@@ -45,35 +45,47 @@ export interface LambdaEvents {
 }
 
 export type LambdaHandlerEnhanced = AwsLambda.Handler<LambdaEvents[keyof LambdaEvents][0]>;
-export type LambdaWrapper = HandlerWrapper<Lambda.InboundConstraint, Lambda.Context, LambdaHandlerEnhanced>;
+export type LambdaWrapper = HandlerWrapper<LambdaInboundConstraint, Lambda.Context, LambdaHandlerEnhanced>;
 
+/**
+ * An inbound implementation that is passed to all middlewares.
+ *
+ * In this case Lambda itself passes a context that is used as the function context.
+ * This has all the information about the functions execution.
+ * This is combined with the event so middleware has access to function meta data.
+ *
+ * @internal
+ */
+export type LambdaInboundKind<GivenEvent> = {
+  context: AwsLambda.Context;
+  event: GivenEvent;
+};
+
+/**
+ * A representation of what an inbound can look like.
+ *
+ * @internal
+ * @constraint This is a constraint type that should only be used in extends clauses.
+ */
+export type LambdaInboundConstraint = Lambda.Inbound<keyof LambdaEvents>;
+
+/**
+ * A grouping of lambda specific types.
+ *
+ * These are public types that help with the developer experience.
+ */
 export namespace Lambda {
   /**
-   * An inbound implementation that is passed to all middlewares.
+   * A pseudo-type function for creating "Lambda.Inbound.Kind" types using the given event identifier.
    *
-   * In this case Lambda itself passes a context that is used as the function context.
-   * This has all the information about the functions execution.
-   * This is combined with the event so middleware has access to function meta data.
+   * @api
    */
-  export type Inbound<GivenEvent> = {
-    context: AwsLambda.Context;
-    event: GivenEvent;
-  };
-
-  /**
-   * A representation of what an inbound can look like.
-   *
-   * @constraint This is a constraint type that should only be used in extends clauses.
-   */
-  export type InboundConstraint = CreateInbound<keyof LambdaEvents>;
-
-  /**
-   * A pseudo-type function for creating "Lambda.Inbound" types using the execution identifier.
-   */
-  export type CreateInbound<ExecutionTypeIdentifier extends keyof LambdaEvents> = Inbound<LambdaEvents[ExecutionTypeIdentifier][0]>;
+  export type Inbound<K extends keyof LambdaEvents> = LambdaInboundKind<LambdaEvents[K][0]>;
 
   /**
    * The context that will be auto-prepared for use with the middlewares and handlers.
+   *
+   * @api
    */
   export type Context = {
     request: {
@@ -84,46 +96,68 @@ export namespace Lambda {
   /**
    * An implementation of handler specialised for lambda.
    * The given context will always inclue the "Lambda.Context" although not required to extend it.
+   *
+   * @api
    */
   export type Handler<GivenContext extends ContextConstraint> = ApplicationHandler<GivenContext, void>;
 
   /**
-   * An impleemntation of the handler without knowledge of context.
+   * A grouping of extra or enhanced types for the handler.
    */
-  export type HandlerContextless = Handler<Lambda.Context>;
+  export namespace Handler {
+    /**
+     * An impleemntation of the handler without knowledge of context.
+     *
+     * @api
+     */
+    export type Contextless = Handler<Lambda.Context>;
+  }
 
+  /**
+   * An implementation of middleware specialised for lambda.
+   *
+   * @api
+   */
+  export type Middleware<
+    GivenInbound extends LambdaInboundConstraint,
+    NextContext extends ContextConstraint,
+    GivenContext extends ContextConstraint = ContextConstraint,
+  > = ApplicationMiddleware<GivenInbound, NextContext, GivenContext>;
+
+  /**
+   * A grouping of extra or enhanced types for middleware.
+   */
   export namespace Middleware {
     /**
-     * An implementation of middleware specialised for lambda.
-     */
-    export type EventAware<
-      GivenInbound extends InboundConstraint,
-      NextContext extends ContextConstraint,
-      GivenContext extends ContextConstraint = ContextConstraint,
-    > = ApplicationMiddleware<GivenInbound, NextContext, GivenContext>;
-
-    /**
     * A lambda middleware that doesn't consume the inbound event.
+    *
+    * @api
     */
     export type Eventless<
       NextContext extends ContextConstraint,
       GivenContext extends ContextConstraint = ContextConstraint,
-    > = EventAware<InboundConstraint, NextContext, GivenContext>;
+    > = Middleware<LambdaInboundConstraint, NextContext, GivenContext>;
 
     /**
     * A lambda middleware that is suited for validation of given context or inbound.
+    *
+    * @api
     */
-    export type EventAwareValidator<
-      GivenInbound extends InboundConstraint,
+    export type Validator<
+      GivenInbound extends LambdaInboundConstraint,
       GivenContext extends ContextConstraint,
-    > = EventAware<GivenInbound, GivenContext, GivenContext>;
+    > = Middleware<GivenInbound, GivenContext, GivenContext>;
 
-    /**
-    * A lambda middleware that is suited for validation of given context only.
-    * This middleware is not typed to know about the given inbound.
-    */
-    export type EventlessValidator<
-      GivenContext extends ContextConstraint,
-    > = Eventless<GivenContext, GivenContext>;
+    export namespace Validator {
+      /**
+      * A lambda middleware that is suited for validation of given context only.
+      * This middleware is not typed to know about the given inbound.
+      *
+      * @api
+      */
+      export type Eventless<
+        GivenContext extends ContextConstraint,
+      > = Middleware.Eventless<GivenContext, GivenContext>;
+    }
   }
 }

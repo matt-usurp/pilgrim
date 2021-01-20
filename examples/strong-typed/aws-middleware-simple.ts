@@ -3,7 +3,7 @@ import { AmazonWebServiceApplication, Lambda } from '../../src/provider/aws';
 /**
  * Inbounds are used to define the kind of execution context being used.
  */
-type Inbound = Lambda.CreateInbound<'aws:apigw:proxy:v2'>;
+type Inbound = Lambda.Inbound<'aws:apigw:proxy:v2'>;
 
 /**
  * This represents our handler.
@@ -21,7 +21,7 @@ declare const handler: Lambda.Handler<{ user: string; }>;
  * However it is possible to use an "Eventless" variation if you are frabricating context.
  * We define that it returns some additional context that when used should satisfy our handler.
  */
-declare const middleware: Lambda.Middleware.EventAware<Inbound, { user: string }>;
+declare const middleware: Lambda.Middleware<Inbound, { user: string }>;
 
 /**
  * The AWS application instance that will be required.
