@@ -1,4 +1,19 @@
 # --
+# -- CI simulation
+# --
+
+# This target isn't ran by CI but it runs all the things that CI does.
+# Good for some self-validation before pushing.
+
+.PHONY: \
+	ci
+
+ci: \
+	code \
+	test \
+	package
+
+# --
 # -- Change Log
 # --
 
@@ -6,7 +21,7 @@
 # Instead we just use npx to download as needed.
 # Do not want to bloat the package file as it increases CI times.
 
-.PHONY:
+.PHONY: \
 	changelog \
 	changelog.proof
 
