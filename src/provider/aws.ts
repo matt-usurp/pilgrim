@@ -1,5 +1,5 @@
 import { HandlerBuilder } from '../application/handler';
-import { Lambda, LambdaEvents, LambdaHandlerEnhanced, LambdaInboundKind, LambdaWrapper } from './aws/lambda';
+import { Lambda, LambdaEvents, LambdaHandlerEnhanced, LambdaWrapper } from './aws/lambda';
 
 // Re-export the lambda namespace.
 // Providing a slightly better DUX for importing.
