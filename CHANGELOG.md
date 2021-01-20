@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.1](https://github.com/matt-usurp/pilgrim/compare/v0.1.0...v0.1.1) (2021-01-20)
+
+
+### Bug Fixes
+
+* aws lambda types not working because of module syntax ([5014438](https://github.com/matt-usurp/pilgrim/commit/5014438833a03c9b0889d1c344e7181c884e76f8))
+* compile for node only ([9fcb5b3](https://github.com/matt-usurp/pilgrim/commit/9fcb5b35a849d5ba0e69acf922df5cec15035c4b))
+
 ## 0.1.0 (2021-01-19)
 
 
