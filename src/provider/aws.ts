@@ -1,26 +1,9 @@
-import { ExecutionTypes as ProviderExecutionTypes } from '@matt-usurp/pilgrim/provider/aws';
-import { Handler as LambdaProvidedHandler } from 'aws-lambda';
-import { HandlerBuilder, HandlerWrapper } from '../application/handler';
-import { Lambda } from './aws/implementation';
+import { HandlerBuilder } from '../application/handler';
+import { Lambda, LambdaEvents, LambdaHandlerEnhanced, LambdaWrapper } from './aws/lambda';
 
 // Re-export the lambda namespace.
 // Providing a slightly better DUX for importing.
 export { Lambda };
-
-/**
- * This is a fake module that can be used to extend the type of execution for a given provider.
- * In this case these are the types of executions for lambda functions within the AWS environment.
- *
- * Note, this definition is empty on purpose to ensure the interface is always present.
- * For implementations see the files under the "provider/aws/execution" directory.
- */
-declare module '@matt-usurp/pilgrim/provider/aws' {
-  // eslint-disable-next-line @typescript-eslint/no-empty-interface
-  interface ExecutionTypes {}
-}
-
-export type LambdaHandlerEnhanced = LambdaProvidedHandler<ProviderExecutionTypes[keyof ProviderExecutionTypes][0]>;
-export type LambdaWrapper = HandlerWrapper<Lambda.InboundConstraint, Lambda.Context, LambdaHandlerEnhanced>;
 
 /**
  * A typical implementation of the lambda wrapper.
@@ -51,7 +34,7 @@ export class AmazonWebServiceApplication {
    * The final call should be the handle function which will wrap up the pipeline.
    * The response from the handle function should be exported and used as the function pointer in the lambda configuration.
    */
-  public lambda<K extends keyof ProviderExecutionTypes, Provider extends ProviderExecutionTypes[K] = ProviderExecutionTypes[K]>(
+  public lambda<K extends keyof LambdaEvents, Provider extends LambdaEvents[K] = LambdaEvents[K]>(
     provider: K,
   ): HandlerBuilder<Lambda.Inbound<Provider[0]>, Lambda.Context, LambdaHandlerEnhanced> {
     return new HandlerBuilder(provider, wrapper);
