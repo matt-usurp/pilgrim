@@ -3,7 +3,9 @@ import { ContextConstraint } from './context';
 import { Middleware, MiddlewareNextFunction } from './middleware';
 
 /**
- * The handler function that executes the main functions.
+ * A handler function that executes the main functionality.
+ *
+ * This handler is not aware of inbound information and requires a well defined context.
  */
 export type Handler<
   Context,
@@ -11,6 +13,26 @@ export type Handler<
   Result = any,
 > = (
   tooling: {
+    context: Context;
+  },
+) => Promise<Result>;
+
+/**
+ * A handler function that executes the main functionality.
+ *
+ * This handler has access to any generated context up-to this point.
+ * But also is aware of the inbound information from the event source.
+ *
+ * This is not recommended for general use but cases where inbound information is consumed directly.
+ */
+export type HandlerWithInbound<
+  Inbound,
+  Context,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Result = any,
+> = (
+  tooling: {
+    inbound: Inbound;
     context: Context;
   },
 ) => Promise<Result>;
@@ -46,12 +68,12 @@ export type HandlerWrapperExecutor<GivenInbound, BaseContext extends ContextCons
 ) => Promise<FunctionResult>;
 
 export class HandlerBuilder<
-  CurrentInbound,
+  GivenInbound,
   CurrentContext extends ContextConstraint,
   ComposeFunction extends HandlerWrapperProviderFunction,
 > {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private readonly middlewares: Middleware<CurrentInbound, ContextConstraint, any>[] = [];
+  private readonly middlewares: Middleware<GivenInbound, ContextConstraint, any>[] = [];
 
   public constructor(
     public readonly provider: string,
@@ -59,15 +81,18 @@ export class HandlerBuilder<
     private readonly wrapper: HandlerWrapper<any, any, any>,
   ) {}
 
+  /**
+   * Provide a middleware function to mutate the current context.
+   */
   public use<
-    GivenMiddleware extends Middleware<CurrentInbound, UnknownNextContext, UnknownGivenContext>,
+    GivenMiddleware extends Middleware<GivenInbound, UnknownNextContext, UnknownGivenContext>,
     UnknownGivenContext extends CurrentContext,
     UnknownNextContext extends ContextConstraint,
   >(
     middleware: GivenMiddleware,
   ): HandlerBuilder<
-    CurrentInbound,
-    GivenMiddleware extends Middleware<CurrentInbound, infer InferNewContext, UnknownGivenContext>
+    GivenInbound,
+    GivenMiddleware extends Middleware<GivenInbound, infer InferNewContext, UnknownGivenContext>
       ? CurrentContext & InferNewContext
       : CurrentContext,
     ComposeFunction
@@ -77,6 +102,9 @@ export class HandlerBuilder<
     return this;
   }
 
+  /**
+   * Provide a handler to finalise the execution.
+   */
   public handle<
     GivenHandler extends Handler<UnknownGivenContext>,
     UnknownGivenContext extends CurrentContext,
@@ -95,6 +123,40 @@ export class HandlerBuilder<
           };
         },
         async(context) => handler({ context }),
+      );
+
+      return wrapped(context);
+    });
+  }
+
+  /**
+   * Provide a handler (with knowledge of the inbound) to finalise the execution.
+   *
+   * This is not the recommended kind of handler to use for general use.
+   * Preferrably you have a combination of middleware and a context to provide.
+   *
+   * However sometimes some handlers just need to know the inbound details straight up.
+   * That might be processing some kind of raw event payload (e.g SNS, SES, SQS) where a middleware makes no sense.
+   * This is the use-case for this kind of handler.
+   */
+  public handleWithInbound<
+    GivenHandler extends HandlerWithInbound<GivenInbound, UnknownGivenContext>,
+    UnknownGivenContext extends CurrentContext,
+  >(handler: GivenHandler): ComposeFunction {
+    return this.wrapper(async({ inbound, context }) => {
+      const wrapped = this.middlewares.reduceRight<MiddlewareNextFunction>(
+        (previous, middleware) => {
+          return async(context) => {
+            const next: MiddlewareNextFunction = async(newcontext) => {
+              const merged = deepmerge(context, newcontext);
+
+              return previous(merged);
+            };
+
+            return middleware({ inbound, context, next });
+          };
+        },
+        async(context) => handler({ inbound, context }),
       );
 
       return wrapped(context);
