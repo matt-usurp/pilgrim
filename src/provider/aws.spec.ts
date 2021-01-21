@@ -1,11 +1,9 @@
-import { AmazonWebServiceApplication } from './aws';
-
-const application = new AmazonWebServiceApplication();
+import { aws } from './aws';
 
 describe('src/provider/aws.ts', (): void => {
   describe('HandlerBuilder', (): void => {
     it('no middleware', async() => {
-      const handler = application.lambda<'aws:apigw:proxy:v1'>()
+      const handler = aws<'aws:apigw:proxy:v1'>()
         .handle(async() => {
           return 'assert:response';
         });
@@ -17,7 +15,7 @@ describe('src/provider/aws.ts', (): void => {
     });
 
     it('composing middleware', async() => {
-      const handler = application.lambda<'aws:apigw:proxy:v1'>()
+      const handler = aws<'aws:apigw:proxy:v1'>()
         .use(async({ context, next }) => {
           const previous = await next(context);
 
