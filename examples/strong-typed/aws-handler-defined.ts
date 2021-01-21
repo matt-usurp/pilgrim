@@ -1,4 +1,4 @@
-import { AmazonWebServiceApplication, Lambda } from '../../src/provider/aws';
+import { aws, Lambda } from '../../src/provider/aws';
 
 /**
  * Pseudo-code for defining a handler.
@@ -9,12 +9,7 @@ import { AmazonWebServiceApplication, Lambda } from '../../src/provider/aws';
  */
 declare const handler: Lambda.Handler<Lambda.Context>;
 
-/**
- * The AWS application instance that will be required.
- */
-declare const app: AmazonWebServiceApplication;
-
-const target = app.lambda('aws:apigw:proxy:v2')
+const target = aws<'aws:apigw:proxy:v2'>()
   .handle(handler);
 
 // The response is a function that lambda can trigger.

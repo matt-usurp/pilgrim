@@ -48,7 +48,7 @@ describe('src/application/handler.ts', (): void => {
           return 'assert:wrapper:response';
         };
 
-        const builder = new HandlerBuilder('test:provider', wrapper);
+        const builder = new HandlerBuilder(wrapper);
         const handler = builder.handle(async() => {
           return 'ignored:handler:response';
         });
@@ -61,7 +61,7 @@ describe('src/application/handler.ts', (): void => {
 
     describe('use cases', (): void => {
       it('given no middleware, base context is given to handler', async() => {
-        const builder: TestHandlerBuilder = new HandlerBuilder('test:provider', composingTextWrapper);
+        const builder: TestHandlerBuilder = new HandlerBuilder(composingTextWrapper);
         const handler = builder.handle(async({ context }) => {
           return context.foo;
         });
@@ -72,7 +72,7 @@ describe('src/application/handler.ts', (): void => {
       });
 
       it('given no middleware, response from handler is given as execution response', async() => {
-        const builder: TestHandlerBuilder = new HandlerBuilder('test:provider', composingTextWrapper);
+        const builder: TestHandlerBuilder = new HandlerBuilder(composingTextWrapper);
         const handler = builder.handle(async() => {
           return 'handler-response';
         });
@@ -83,7 +83,7 @@ describe('src/application/handler.ts', (): void => {
       });
 
       it('given single middleware, middleware changes response from handler, new response given as execution response', async() => {
-        const builder: TestHandlerBuilder = new HandlerBuilder('test:provider', composingTextWrapper);
+        const builder: TestHandlerBuilder = new HandlerBuilder(composingTextWrapper);
         const handler = builder
           .use(async({ context, next }) => {
             const previous = await next(context);
@@ -100,7 +100,7 @@ describe('src/application/handler.ts', (): void => {
       });
 
       it('given single middleware, middleware changes given context, handler receives new context', async() => {
-        const builder: TestHandlerBuilder = new HandlerBuilder('test:provider', passThroughWrapper);
+        const builder: TestHandlerBuilder = new HandlerBuilder(passThroughWrapper);
         const handler = builder
           .use(async({ next } ) => {
             return next({
@@ -117,7 +117,7 @@ describe('src/application/handler.ts', (): void => {
       });
 
       it('given multiple middleware, each can change response of previous, given as execution response', async() => {
-        const builder: TestHandlerBuilder = new HandlerBuilder('test:provider', passThroughWrapper);
+        const builder: TestHandlerBuilder = new HandlerBuilder(passThroughWrapper);
         const handler = builder
           .use(async({ context, next } ) => {
             const previous = await next(context);
@@ -155,7 +155,7 @@ describe('src/application/handler.ts', (): void => {
       });
 
       it('given two middleware, altering contexts are merged for handler, handler recieves merged context', async() => {
-        const builder: TestHandlerBuilder = new HandlerBuilder('test:provider', passThroughWrapper);
+        const builder: TestHandlerBuilder = new HandlerBuilder(passThroughWrapper);
         const handler = builder
           .use(async({ next } ) => {
             return next({
@@ -188,7 +188,7 @@ describe('src/application/handler.ts', (): void => {
       });
 
       it('given multiple middleware, altering contexts are deep merged, handler given deep merged context', async() => {
-        const builder: TestHandlerBuilder = new HandlerBuilder('test:provider', passThroughWrapper);
+        const builder: TestHandlerBuilder = new HandlerBuilder(passThroughWrapper);
         const handler = builder
           .use(async({ next }) => {
             return next({
@@ -244,7 +244,7 @@ describe('src/application/handler.ts', (): void => {
       });
 
       it('given several middleware, execution order is as expected', async() => {
-        const builder: TestHandlerBuilder = new HandlerBuilder('test:provider', composingTextWrapper);
+        const builder: TestHandlerBuilder = new HandlerBuilder(composingTextWrapper);
         const handler = builder
           .use(async({ context, next }) => {
             const previous = await next(context);
@@ -272,7 +272,7 @@ describe('src/application/handler.ts', (): void => {
 
       // @todo DELETE ONCE OTHERS ARE DONE
       it('given simple middleware, middleware executed to modify response', async() => {
-        const builder: TestHandlerBuilder = new HandlerBuilder('test:provider', composingTextWrapper);
+        const builder: TestHandlerBuilder = new HandlerBuilder(composingTextWrapper);
         const handler = builder
           .use(async({ context, next }) => {
             const previous = await next(context);

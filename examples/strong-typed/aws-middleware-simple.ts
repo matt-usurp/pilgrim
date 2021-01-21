@@ -1,4 +1,4 @@
-import { AmazonWebServiceApplication, Lambda } from '../../src/provider/aws';
+import { aws, Lambda } from '../../src/provider/aws';
 
 /**
  * Inbounds are used to define the kind of execution context being used.
@@ -23,12 +23,7 @@ declare const handler: Lambda.Handler<{ user: string; }>;
  */
 declare const middleware: Lambda.Middleware<Inbound, { user: string }>;
 
-/**
- * The AWS application instance that will be required.
- */
-declare const app: AmazonWebServiceApplication;
-
-const target = app.lambda('aws:apigw:proxy:v2')
+const target = aws<'aws:apigw:proxy:v2'>()
   .use(middleware)
   .handle(handler);
 

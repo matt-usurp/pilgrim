@@ -67,7 +67,8 @@ export type LambdaInboundKind<GivenEvent> = {
  * @internal
  * @constraint This is a constraint type that should only be used in extends clauses.
  */
-export type LambdaInboundConstraint = Lambda.Inbound<keyof LambdaEvents>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type LambdaInboundConstraint = Lambda.Inbound<any>;
 
 /**
  * A grouping of lambda specific types.

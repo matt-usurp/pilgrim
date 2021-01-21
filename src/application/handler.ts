@@ -76,7 +76,6 @@ export class HandlerBuilder<
   private readonly middlewares: Middleware<GivenInbound, ContextConstraint, any>[] = [];
 
   public constructor(
-    public readonly provider: string,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private readonly wrapper: HandlerWrapper<any, any, any>,
   ) {}

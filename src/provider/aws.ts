@@ -25,6 +25,8 @@ const wrapper: LambdaWrapper = (executor) => async(event, context) => {
 
 /**
  * An AWS application helper.
+ *
+ * @deprecated use the aws() function instead
  */
 export class AmazonWebServiceApplication {
   /**
@@ -34,9 +36,18 @@ export class AmazonWebServiceApplication {
    * The final call should be the handle function which will wrap up the pipeline.
    * The response from the handle function should be exported and used as the function pointer in the lambda configuration.
    */
-  public lambda<K extends keyof LambdaEvents>(
-    provider: K,
-  ): HandlerBuilder<Lambda.Inbound<K>, Lambda.Context, LambdaHandlerEnhanced> {
-    return new HandlerBuilder(provider, wrapper);
+  public lambda<K extends keyof LambdaEvents>(): HandlerBuilder<Lambda.Inbound<K>, Lambda.Context, LambdaHandlerEnhanced> {
+    return new HandlerBuilder(wrapper);
   }
+}
+
+/**
+ * Create a handler that can be invoked by lambda.
+ *
+ * The result of this call is a fluent interface that can be used to apply middleware.
+ * The final call should be the handle function which will wrap up the pipeline.
+ * The response from the handle function should be exported and used as the function pointer in the lambda configuration.
+ */
+export function aws<K extends keyof LambdaEvents>(): HandlerBuilder<Lambda.Inbound<K>, Lambda.Context, LambdaHandlerEnhanced> {
+  return new HandlerBuilder(wrapper);
 }

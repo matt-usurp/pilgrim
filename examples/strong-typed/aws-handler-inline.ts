@@ -1,11 +1,6 @@
-import { AmazonWebServiceApplication } from '../../src/provider/aws';
+import { aws } from '../../src/provider/aws';
 
-/**
- * The AWS application instance that will be required.
- */
-declare const app: AmazonWebServiceApplication;
-
-const target = app.lambda('aws:apigw:proxy:v2')
+const target = aws<'aws:apigw:proxy:v2'>()
   .handle(async({ context }) => {
     context.request;
   });

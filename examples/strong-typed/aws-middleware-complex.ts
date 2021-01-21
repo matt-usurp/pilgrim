@@ -1,4 +1,4 @@
-import { AmazonWebServiceApplication, Lambda } from '../../src/provider/aws';
+import { aws, Lambda } from '../../src/provider/aws';
 
 /**
  * Inbounds are used to define the kind of execution context being used.
@@ -14,12 +14,7 @@ declare const withFilters: Lambda.Middleware<Inbound, { filters: { search: strin
 declare const withPagination: Lambda.Middleware<Inbound, { pagination: { page: number; limit: number }; }>;
 declare const withFilterValidation : Lambda.Middleware.Validator.Eventless<{ filters: { search: string }; }>;
 
-/**
- * The AWS application instance that will be required.
- */
-declare const app: AmazonWebServiceApplication;
-
-const target = app.lambda('aws:apigw:proxy:v2')
+const target = aws<'aws:apigw:proxy:v2'>()
   .use(withFilters)
   .use(withPagination)
   .use(withFilterValidation)

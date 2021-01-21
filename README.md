@@ -11,11 +11,9 @@ A type-safe platform handler/framework for AWS lambda with middleware support.
 We use a builder kind of pattern to construct a middleware and handler chain.
 
 ```ts
-import { AmazonWebServiceApplication } from '@matt-usurp/pilgrim/provider/aws';
+import { aws } from '@matt-usurp/pilgrim/provider/aws';
 
-const app = new AmazonWebServiceApplication();
-
-export target = app.lambda('aws:apigw:proxy:v2')
+export const target = aws<'aws:apigw:proxy:v2'>()
   .handle(async ({ context }) => {
     // ..
   });
@@ -33,7 +31,7 @@ import { Lambda } from '@matt-usurp/pilgrim/provider/aws';
 type Inbound = Lambda.CreateInbound<'aws:apigw:proxy:v2'>;
 
 type MyNewContext = { user: { id: string; }; };
-type MyMiddleware = Lambda.Middleware.EventAware<Inbound, MyNewContext>;
+type MyMiddleware = Lambda.Middleware<Inbound, MyNewContext>;
 
 export const withUserData: MyMiddleware = async ({ event, next }) => {
   // Remember, "event" is APIGatewayProxyEventV2 here.
@@ -61,7 +59,7 @@ This means you can perform tasks to resolve information (in this case user id) a
 This can be used within our original code sample by adding a `use()` call.
 
 ```ts
-export const target = app.lambda('aws:apigw:proxy:v2')
+export const target = aws<'aws:apigw:proxy:v2'>()
   .use(withUserData)
   .handle(async ({ context }) => {
     context.user.id; // what ever was resolved from middleware.

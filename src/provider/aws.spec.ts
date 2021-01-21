@@ -3,17 +3,9 @@ import { AmazonWebServiceApplication } from './aws';
 const application = new AmazonWebServiceApplication();
 
 describe('src/provider/aws.ts', (): void => {
-  describe('AmazonWebServiceApplication', (): void => {
-    it('lambda() passes provider to HandlerBuilder', (): void => {
-      const builder = application.lambda('aws:apigw:proxy:v1');
-
-      expect(builder.provider).toBe('aws:apigw:proxy:v1');
-    });
-  });
-
   describe('HandlerBuilder', (): void => {
     it('no middleware', async() => {
-      const handler = application.lambda('aws:apigw:proxy:v1')
+      const handler = application.lambda<'aws:apigw:proxy:v1'>()
         .handle(async() => {
           return 'assert:response';
         });
@@ -25,7 +17,7 @@ describe('src/provider/aws.ts', (): void => {
     });
 
     it('composing middleware', async() => {
-      const handler = application.lambda('aws:apigw:proxy:v1')
+      const handler = application.lambda<'aws:apigw:proxy:v1'>()
         .use(async({ context, next }) => {
           const previous = await next(context);
 
