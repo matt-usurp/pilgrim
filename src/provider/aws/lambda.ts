@@ -44,8 +44,8 @@ export interface LambdaEvents {
   readonly 'aws:sqs': [AwsLambda.SQSEvent, void];
 }
 
-export type LambdaHandlerEnhanced = AwsLambda.Handler<LambdaEvents[keyof LambdaEvents][0]>;
-export type LambdaWrapper = HandlerWrapper<LambdaInboundConstraint, Lambda.Context, LambdaHandlerEnhanced>;
+export type LambdaHandler = AwsLambda.Handler;
+export type LambdaWrapper = HandlerWrapper<LambdaInboundConstraint, Lambda.Context, LambdaHandler>;
 
 /**
  * An inbound implementation that is passed to all middlewares.

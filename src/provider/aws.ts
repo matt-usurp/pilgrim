@@ -1,5 +1,5 @@
 import { HandlerBuilder } from '../application/handler';
-import { Lambda, LambdaEvents, LambdaHandlerEnhanced, LambdaWrapper } from './aws/lambda';
+import { Lambda, LambdaEvents, LambdaHandler, LambdaWrapper } from './aws/lambda';
 
 // Re-export the lambda namespace.
 // Providing a slightly better DUX for importing.
@@ -36,7 +36,7 @@ export class AmazonWebServiceApplication {
    * The final call should be the handle function which will wrap up the pipeline.
    * The response from the handle function should be exported and used as the function pointer in the lambda configuration.
    */
-  public lambda<K extends keyof LambdaEvents>(): HandlerBuilder<Lambda.Inbound<K>, Lambda.Context, LambdaHandlerEnhanced> {
+  public lambda<K extends keyof LambdaEvents>(): HandlerBuilder<Lambda.Inbound<K>, Lambda.Context, LambdaHandler> {
     return new HandlerBuilder(wrapper);
   }
 }
@@ -48,6 +48,6 @@ export class AmazonWebServiceApplication {
  * The final call should be the handle function which will wrap up the pipeline.
  * The response from the handle function should be exported and used as the function pointer in the lambda configuration.
  */
-export function aws<K extends keyof LambdaEvents>(): HandlerBuilder<Lambda.Inbound<K>, Lambda.Context, LambdaHandlerEnhanced> {
+export function aws<K extends keyof LambdaEvents>(): HandlerBuilder<Lambda.Inbound<K>, Lambda.Context, LambdaHandler> {
   return new HandlerBuilder(wrapper);
 }
