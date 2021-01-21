@@ -28,7 +28,7 @@ import { Lambda } from '@matt-usurp/pilgrim/provider/aws';
 
 // Providing the middleware with knowledge of the kind of execution context
 // This provides the `{ event }` typed as "APIGatewayProxyEventV2"
-type Inbound = Lambda.CreateInbound<'aws:apigw:proxy:v2'>;
+type Inbound = Lambda.Inbound<'aws:apigw:proxy:v2'>;
 
 type MyNewContext = { user: { id: string; }; };
 type MyMiddleware = Lambda.Middleware<Inbound, MyNewContext>;
