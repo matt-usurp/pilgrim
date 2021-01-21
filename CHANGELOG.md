@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.1](https://github.com/matt-usurp/pilgrim/compare/v0.2.0...v0.2.1) (2021-01-21)
+
+
+### Features
+
+* further improved api for aws lambda ([6907200](https://github.com/matt-usurp/pilgrim/commit/690720035422d27e883e3dc86d6fb67df2b32864))
+
+
+### Bug Fixes
+
+* add missing result definition to cognito events ([a36d6b3](https://github.com/matt-usurp/pilgrim/commit/a36d6b3a826990936405a8ffe15bdb19f9f6b122)) [@sarcastic-coder](https://github.com/sarcastic-coder)
+* removed aws application class usage from library ([f0db8d9](https://github.com/matt-usurp/pilgrim/commit/f0db8d95029d46cc0e9a9f5281d3244313747b6c))
+
+### Deprecations
+
+* `AmazonWebServiceApplication` has been deprecated for the `aws()` instead.
+
 ## [0.2.0](https://github.com/matt-usurp/pilgrim/compare/v0.1.1...v0.2.0) (2021-01-20)
 
 
@@ -32,7 +49,7 @@ Changes from [ef5ed67](https://github.com/matt-usurp/pilgrim/commit/ef5ed670fc35
 
 ### Features
 
-* add event type maps for all sources defined in aws-lambda ([3fe6521](https://github.com/matt-usurp/pilgrim/commit/3fe6521e4f89ca9c93e433a4ff9faae7c9b2cbd4))
+* add event type maps for all sources defined in aws-lambda ([3fe6521](https://github.com/matt-usurp/pilgrim/commit/3fe6521e4f89ca9c93e433a4ff9faae7c9b2cbd4)) [@sarcastic-coder](https://github.com/sarcastic-coder)
 * readme ([39cf8d6](https://github.com/matt-usurp/pilgrim/commit/39cf8d6325ae0182371b77208a1ace8061122d2e))
 * update and document almost everything ([5daacaa](https://github.com/matt-usurp/pilgrim/commit/5daacaa73720af90660034f05d20aa89a4a90994))
 
