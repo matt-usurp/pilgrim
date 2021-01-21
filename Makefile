@@ -115,7 +115,7 @@ package.build: \
 	package.build.package.verify
 
 package.build.clean:
-	rm -rf build/workspace
+	rm -rf build/workspace/*
 
 package.build.setup:
 	mkdir -p build/workspace
