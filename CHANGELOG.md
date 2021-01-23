@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.2](https://github.com/matt-usurp/pilgrim/compare/v0.2.1...v0.2.2) (2021-01-23)
+
+
+### Bug Fixes
+
+* **lambda:** compile for node 10 compatibility ([17995c3](https://github.com/matt-usurp/pilgrim/commit/17995c33d4aae7f86b49d5184e3ee422743f8da9))
+
 ### [0.2.1](https://github.com/matt-usurp/pilgrim/compare/v0.2.0...v0.2.1) (2021-01-21)
 
 
