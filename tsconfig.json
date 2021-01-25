@@ -4,9 +4,6 @@
     "module": "commonjs",
     "target": "es2018",
 
-    "strict": true,
-    "alwaysStrict": true,
-
     "allowJs": false,
     "checkJs": false,
     "sourceMap": false,
@@ -17,12 +14,18 @@
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": false,
 
+    "strict": true,
+    "alwaysStrict": true,
+    "stripInternal": true,
+
+    "noEmit": true,
     "noErrorTruncation": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
-    "noImplicitReturns": true,
     "noImplicitThis": true,
-    "noEmit": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
 
     "keyofStringsOnly": true,
   },
