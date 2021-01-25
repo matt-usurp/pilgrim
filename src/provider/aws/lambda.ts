@@ -2,25 +2,12 @@ import * as AwsLambda from 'aws-lambda';
 import { PilgrimContext } from '../../application/context';
 import { PilgrimHandler } from '../../application/handler';
 import { PilgrimMiddleware } from '../../application/middleware';
-import { PilgrimProvider } from '../../application/provider';
 import { LambdaEventSource } from './lambda/sources';
 
 /**
  * Alias of the supplied AWS Lambda handler.
  */
-export type LambdaHandler = AwsLambda.Handler;
-
-/**
- *
- */
-export type LambdaProviderCompositionFunction = (
-  PilgrimProvider.CompositionFunction<
-    Lambda.Source.Constraint,
-    Lambda.Context,
-    any,
-    LambdaHandler
-  >
-);
+export type LambdaHandler<Event, Response> = AwsLambda.Handler<Event, Response>;
 
 /**
  * A grouping of lambda specific types.
@@ -28,8 +15,15 @@ export type LambdaProviderCompositionFunction = (
  * These are public types that help with the developer experience.
  */
 export namespace Lambda {
-  export type Event<K extends keyof LambdaEventSource> = LambdaEventSource[K];
-  export type Source<K extends keyof LambdaEventSource> = Source.Definition<LambdaEventSource[K][0]>;
+  /**
+   * Helper type to retreive lambda events from the given identifier.
+   */
+  export type Event<Identifier extends keyof LambdaEventSource> = LambdaEventSource[Identifier];
+
+  /**
+   * Helper type for creating lambda sources from the given identifier.
+   */
+  export type Source<Identifier extends keyof LambdaEventSource> = Source.Definition<LambdaEventSource[Identifier]['Event']>;
 
   export namespace Source {
     /**
@@ -56,6 +50,9 @@ export namespace Lambda {
     };
   }
 
+  /**
+   * A base context for lambda events.
+   */
   export type Context = {
     request: {
       id: string;
@@ -64,39 +61,40 @@ export namespace Lambda {
 
   /**
    * An implementation of handler specialised for lambda.
-   * The given context will always inclue the "Lambda.Context" although not required to extend it.
    *
-   * @api
+   * The context will always include the "Lambda.Context" as its provided by the core functionality.
+   * The handler however only needs to supply a partial context to allow for a better developer experience.
    */
-  export type Handler<GivenContext extends PilgrimContext.Context.Constraint> = PilgrimHandler.Handler<GivenContext, any>;
+  export type Handler<
+    Context extends PilgrimContext.Context.Constraint,
+    Response
+  > = PilgrimHandler.Handler<Context, Response>;
 
   /**
-   * An implementation of middleware specialised for lambda.
+   * A middleware specialised for lambda.
    *
-   * @api
+   * The context will always include the "Lambda.Context" as its provided by the core functionality.
+   * The handler however only needs to supply a partial context to allow for a better developer experience.
+   *
+   * @see PilgrimMiddleware.Middleware for more information
    */
   export type Middleware<
-    Source,
+    Source extends Lambda.Source.Constraint,
     ContextInbound extends PilgrimContext.Context.Constraint,
     ContextOutbound extends PilgrimContext.Context.Constraint,
-    ResponseInbound extends PilgrimMiddleware.Response.Constraint,
-    ResponseOutbound extends PilgrimMiddleware.Response.Constraint,
+    ResponseInbound,
+    ResponseOutbound,
   > = PilgrimMiddleware.Middleware<Source, ContextInbound, ContextOutbound, ResponseInbound, ResponseOutbound>;
 
-  /**
-   * A grouping of extra or enhanced types for middleware.
-   */
   export namespace Middleware {
     /**
-    * A lambda middleware that doesn't consume the inbound event.
-    *
-    * @api
+    * A lambda middleware that doesn't require the event source.
     */
     export type WithoutSource<
       ContextInbound extends PilgrimContext.Context.Constraint,
       ContextOutbound extends PilgrimContext.Context.Constraint,
-      ResponseInbound extends PilgrimMiddleware.Response.Constraint,
-      ResponseOutbound extends PilgrimMiddleware.Response.Constraint,
+      ResponseInbound,
+      ResponseOutbound,
     > = Middleware<Source.Constraint, ContextInbound, ContextOutbound, ResponseInbound, ResponseOutbound>;
   }
 }

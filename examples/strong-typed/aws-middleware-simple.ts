@@ -12,7 +12,7 @@ type Source = Lambda.Source<'aws:apigw:proxy:v2'>;
  * If we were to just try and consume this handler with `app.lambda('..').handler(handler)` we would get an error.
  * The base context is `Lambda.Context` and we have no way to provide the required context information.
  */
-declare const handler: Lambda.Handler<{ user: string; }>;
+declare const handler: Lambda.Handler<{ user: string; }, any>;
 
 /**
  * Here we define a middleware.

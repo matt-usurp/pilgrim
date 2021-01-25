@@ -10,7 +10,7 @@ type PassThroughFunction = PilgrimMiddleware.Invoker.Next<any, any>;
 
 export class HandlerBuilder<
   BuilderSource,
-  BuilderProviderComposerFunction extends PilgrimProvider.InvokerComposer<BuilderSource, any, any, any>,
+  BuilderProviderComposerFunction extends PilgrimProvider.CompositionFunction<BuilderSource, any, any, any>,
   BuilderResponseConstraint,
   BuilderContext extends PilgrimContext.Context.Constraint,
   BuilderResponse extends BuilderResponseConstraint
@@ -93,7 +93,7 @@ export class HandlerBuilder<
     H extends PilgrimHandler.Handler.SourceAware<BuilderSource, EnsureContextInbound, EnsureContextOutbound>,
     EnsureContextInbound extends BuilderContext,
     EnsureContextOutbound extends BuilderResponse,
-  >(handler: H): PilgrimProvider.InvokerComposer<BuilderContext, any, any, BuilderProviderComposerFunction> {
+  >(handler: H): PilgrimProvider.CompositionFunction<BuilderContext, any, any, BuilderProviderComposerFunction> {
     return this.composer(async({ source, context }) => {
       const exector: PassThroughFunction = async(context) => {
         return handler({
