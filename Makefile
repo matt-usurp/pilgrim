@@ -81,7 +81,8 @@ code.fix:
 	test
 
 test:
-	npx jest
+	npx jest \
+		--verbose
 
 # --
 # -- Project Build
