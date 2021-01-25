@@ -1,11 +1,12 @@
 import { HandlerBuilder } from '../application/handler/builder';
-import { Lambda, LambdaProviderComposer, LambdaSources } from './aws/lambda';
+import { Lambda, LambdaProviderCompositionFunction } from './aws/lambda';
+import { LambdaEventSource } from './aws/lambda/sources';
 
 // Re-export the lambda namespace.
 // Providing a slightly better DUX for importing.
 export { Lambda };
 
-const composer: LambdaProviderComposer = (executor) => async(event, context) => {
+const composer: LambdaProviderCompositionFunction = (executor) => async(event, context) => {
   return executor({
     source: {
       event,
@@ -27,10 +28,10 @@ const composer: LambdaProviderComposer = (executor) => async(event, context) => 
  * The final call should be the handle function which will wrap up the pipeline.
  * The response from the handle function should be exported and used as the function pointer in the lambda configuration.
  */
-export function aws<K extends keyof LambdaSources>(): (
+export function aws<K extends keyof LambdaEventSource>(): (
   HandlerBuilder<
     Lambda.Source<K>,
-    LambdaProviderComposer,
+    LambdaProviderCompositionFunction,
     any,
     Lambda.Context,
     any
