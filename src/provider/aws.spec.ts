@@ -1,4 +1,4 @@
-import { aws } from './aws';
+import { aws, Lambda } from './aws';
 
 describe('src/provider/aws.ts', (): void => {
   describe('HandlerBuilder', (): void => {
@@ -16,10 +16,10 @@ describe('src/provider/aws.ts', (): void => {
 
     it('composing middleware', async() => {
       const handler = aws<'aws:apigw:proxy:v1'>()
-        .use(async({ context, next }) => {
+        .use<Lambda.Middleware<any, any, any, any, any>>(async({ context, next }) => {
           const previous = await next(context);
 
-          return `middleware:${previous}`;
+          return `middleware:${previous}` as any;
         })
         .handle(async() => {
           return 'assert:response';

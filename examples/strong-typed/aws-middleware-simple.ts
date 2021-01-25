@@ -1,9 +1,9 @@
 import { aws, Lambda } from '../../src/provider/aws';
 
 /**
- * Inbounds are used to define the kind of execution context being used.
+ * Sources are used to provide specific type information to middleware functions.
  */
-type Inbound = Lambda.Inbound<'aws:apigw:proxy:v2'>;
+type Source = Lambda.Source<'aws:apigw:proxy:v2'>;
 
 /**
  * This represents our handler.
@@ -21,7 +21,7 @@ declare const handler: Lambda.Handler<{ user: string; }>;
  * However it is possible to use an "Eventless" variation if you are frabricating context.
  * We define that it returns some additional context that when used should satisfy our handler.
  */
-declare const middleware: Lambda.Middleware<Inbound, { user: string }>;
+declare const middleware: Lambda.Middleware<Source, any, { user: string }, any, any>;
 
 const target = aws<'aws:apigw:proxy:v2'>()
   .use(middleware)

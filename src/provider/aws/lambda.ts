@@ -1,9 +1,10 @@
 import * as AwsLambda from 'aws-lambda';
-import { ContextConstraint } from '../../application/context';
-import { Handler as ApplicationHandler, HandlerWrapper } from '../../application/handler';
-import { Middleware as ApplicationMiddleware } from '../../application/middleware';
+import { PilgrimContext } from '../../application/context';
+import { PilgrimHandler } from '../../application/handler';
+import { PilgrimMiddleware } from '../../application/middleware';
+import { PilgrimProvider } from '../../application/provider';
 
-export interface LambdaEvents {
+export interface LambdaSources {
   readonly 'aws:alb:request': [AwsLambda.ALBEvent, AwsLambda.ALBResult];
   readonly 'aws:apigw:authorizer:request': [AwsLambda.APIGatewayRequestAuthorizerEvent, AwsLambda.APIGatewayAuthorizerResult];
   readonly 'aws:apigw:authorizer:token': [AwsLambda.APIGatewayTokenAuthorizerEvent, AwsLambda.APIGatewayAuthorizerResult];
@@ -45,10 +46,10 @@ export interface LambdaEvents {
 }
 
 export type LambdaHandler = AwsLambda.Handler;
-export type LambdaWrapper = HandlerWrapper<LambdaInboundConstraint, Lambda.Context, LambdaHandler>;
+export type LambdaProviderComposer = PilgrimProvider.InvokerComposer<LambdaSourceConstraint, Lambda.Context, any, LambdaHandler>;
 
 /**
- * An inbound implementation that is passed to all middlewares.
+ * An source implementation that is passed to all middlewares.
  *
  * In this case Lambda itself passes a context that is used as the function context.
  * This has all the information about the functions execution.
@@ -56,19 +57,18 @@ export type LambdaWrapper = HandlerWrapper<LambdaInboundConstraint, Lambda.Conte
  *
  * @internal
  */
-export type LambdaInboundKind<GivenEvent> = {
+export type LambdaSourceKind<GivenEvent> = {
   context: AwsLambda.Context;
   event: GivenEvent;
 };
 
 /**
- * A representation of what an inbound can look like.
+ * A representation of what a source can look like.
  *
  * @internal
  * @constraint This is a constraint type that should only be used in extends clauses.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type LambdaInboundConstraint = Lambda.Inbound<any>;
+export type LambdaSourceConstraint = Lambda.Source<any>;
 
 /**
  * A grouping of lambda specific types.
@@ -76,18 +76,9 @@ export type LambdaInboundConstraint = Lambda.Inbound<any>;
  * These are public types that help with the developer experience.
  */
 export namespace Lambda {
-  /**
-   * A pseudo-type function for creating "Lambda.Inbound.Kind" types using the given event identifier.
-   *
-   * @api
-   */
-  export type Inbound<K extends keyof LambdaEvents> = LambdaInboundKind<LambdaEvents[K][0]>;
+  export type Event<K extends keyof LambdaSources> = LambdaSources[K];
+  export type Source<K extends keyof LambdaSources> = LambdaSourceKind<LambdaSources[K][0]>;
 
-  /**
-   * The context that will be auto-prepared for use with the middlewares and handlers.
-   *
-   * @api
-   */
   export type Context = {
     request: {
       id: string;
@@ -100,19 +91,7 @@ export namespace Lambda {
    *
    * @api
    */
-  export type Handler<GivenContext extends ContextConstraint> = ApplicationHandler<GivenContext, void>;
-
-  /**
-   * A grouping of extra or enhanced types for the handler.
-   */
-  export namespace Handler {
-    /**
-     * An impleemntation of the handler without knowledge of context.
-     *
-     * @api
-     */
-    export type Contextless = Handler<Lambda.Context>;
-  }
+  export type Handler<GivenContext extends PilgrimContext.Context.Constraint> = PilgrimHandler.Handler<GivenContext, any>;
 
   /**
    * An implementation of middleware specialised for lambda.
@@ -120,10 +99,12 @@ export namespace Lambda {
    * @api
    */
   export type Middleware<
-    GivenInbound extends LambdaInboundConstraint,
-    NextContext extends ContextConstraint,
-    GivenContext extends ContextConstraint = ContextConstraint,
-  > = ApplicationMiddleware<GivenInbound, NextContext, GivenContext>;
+    Source,
+    ContextInbound extends PilgrimContext.Context.Constraint,
+    ContextOutbound extends PilgrimContext.Context.Constraint,
+    ResponseInbound extends PilgrimMiddleware.Response.Constraint,
+    ResponseOutbound extends PilgrimMiddleware.Response.Constraint,
+  > = PilgrimMiddleware.Middleware<Source, ContextInbound, ContextOutbound, ResponseInbound, ResponseOutbound>;
 
   /**
    * A grouping of extra or enhanced types for middleware.
@@ -134,31 +115,11 @@ export namespace Lambda {
     *
     * @api
     */
-    export type Eventless<
-      NextContext extends ContextConstraint,
-      GivenContext extends ContextConstraint = ContextConstraint,
-    > = Middleware<LambdaInboundConstraint, NextContext, GivenContext>;
-
-    /**
-    * A lambda middleware that is suited for validation of given context or inbound.
-    *
-    * @api
-    */
-    export type Validator<
-      GivenInbound extends LambdaInboundConstraint,
-      GivenContext extends ContextConstraint,
-    > = Middleware<GivenInbound, GivenContext, GivenContext>;
-
-    export namespace Validator {
-      /**
-      * A lambda middleware that is suited for validation of given context only.
-      * This middleware is not typed to know about the given inbound.
-      *
-      * @api
-      */
-      export type Eventless<
-        GivenContext extends ContextConstraint,
-      > = Middleware.Eventless<GivenContext, GivenContext>;
-    }
+    export type WithoutSource<
+      ContextInbound extends PilgrimContext.Context.Constraint,
+      ContextOutbound extends PilgrimContext.Context.Constraint,
+      ResponseInbound extends PilgrimMiddleware.Response.Constraint,
+      ResponseOutbound extends PilgrimMiddleware.Response.Constraint,
+    > = Middleware<LambdaSourceConstraint, ContextInbound, ContextOutbound, ResponseInbound, ResponseOutbound>;
   }
 }
