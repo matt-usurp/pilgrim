@@ -2,12 +2,12 @@ import { PilgrimContext } from './context';
 import { PilgrimHandler } from './handler';
 
 export namespace PilgrimProvider {
-  export type FunctionConstraint = (...args: any[]) => any;
+  export type AnyFunctionConstraint = (...args: any[]) => any;
 
   /**
    * What the provider actually executes
    */
-  export type Invoker<
+  export type InvocationFunction<
     Source,
     Context extends PilgrimContext.Context.Constraint,
     Response
@@ -16,10 +16,10 @@ export namespace PilgrimProvider {
   /**
    * Builds a function that the provider understands.
    */
-  export type InvokerComposer<
+  export type CompositionFunction<
     Source,
     InvokerContext extends PilgrimContext.Context.Constraint,
     InvokerResponse,
-    ProviderFunction extends FunctionConstraint,
-  > = (invoker: Invoker<Source, InvokerContext, InvokerResponse>) => ProviderFunction;
+    ProviderFunction extends AnyFunctionConstraint,
+  > = (invoker: InvocationFunction<Source, InvokerContext, InvokerResponse>) => ProviderFunction;
 }

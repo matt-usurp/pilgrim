@@ -22,7 +22,7 @@ type TestProviderComposer<
   ChainResponse,
   ProviderResponse
 > = (
-  PilgrimProvider.InvokerComposer<
+  PilgrimProvider.CompositionFunction<
     TestSource,
     TestContext,
     ChainResponse,

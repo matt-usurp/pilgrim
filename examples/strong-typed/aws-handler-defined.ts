@@ -7,7 +7,7 @@ import { aws, Lambda } from '../../src/provider/aws';
  * This means that anything additional in the context must be provided by middleware.
  * Note, TypeScript will show this error in the handler usage.
  */
-declare const handler: Lambda.Handler<Lambda.Context>;
+declare const handler: Lambda.Handler<Lambda.Context, any>;
 
 const target = aws<'aws:apigw:proxy:v2'>()
   .handle(handler);
