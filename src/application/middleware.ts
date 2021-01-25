@@ -3,39 +3,47 @@ import { PilgrimContext } from './context';
 import { PilgrimHandler } from './handler';
 import { PilgrimResponse } from './response';
 
+/**
+ * Pilgrim middleware types.
+ *
+ * These are used by the core library.
+ * Aliases are provided through the main pilgrim namespace.
+ *
+ * @see Pilgrim.Middleware for the public namespace.
+ */
 export namespace PilgrimMiddleware {
+  /**
+   * Inherit types are provided to middleware for certain use cases.
+   *
+   * In most cases they are used to ensure the given data is passed down the chain.
+   * Forgetting the merge or pass an inherit type will cause a build failure.
+   */
   export namespace Inherit {
-      export type Context = (
-        & Context.ContextMarking
-      );
+    /**
+     * A marked context that is provided to all middleware.
+     * This ensure the context is merged as expected down to the handler.
+     */
+    export type Context = Marking.ContextMarking;
 
-      export namespace Context {
-        export type ContextMarking = {
-          readonly PilgrimMiddlewareInheritContextMarking: unique symbol;
-        };
-      }
+    /**
+     * A marked response that is required to be returned by all middleware.
+     * This is returned from the next function and ensures all responses bubble down the chain.
+     */
+    export type Response = PilgrimResponse.Response<PilgrimResponse.Response.Type.Inherit, Marking.ResponseMarking>;
 
-      export type Response = PilgrimResponse.Response<PilgrimResponse.Response.Type.Inherit, ResponseMarking>;
+    /**
+     * Marking types that make inherit values unique and unconstrustable.
+     */
+    export namespace Marking {
+      export type ContextMarking = { readonly PilgrimMiddlewareInheritContextMarking: unique symbol; };
       export type ResponseMarking = { readonly PilgrimMiddlewareInheritResponseMarking: unique symbol; };
     }
-
-  export namespace Invoker {
-    export type Next<Context, Response> = (context: Context) => Promise<Response>;
-    export type Tooling<Source, Context, NextFunction> = (
-      & PilgrimHandler.Handler.Invoker.Tooling.SourceAware<Source, Context>
-      & {
-        next: NextFunction;
-      }
-    );
   }
 
-  export namespace Response {
-    export type Constraint = (
-      | PilgrimResponse.Response.Constraint
-      | Grok.Union.MutatorKind
-    );
-  }
-
+  /**
+   * Invoker is the main function body representation of the middleware.
+   * The type is complex and ensure that data flows as expected.
+   */
   export type Invoker<
     Source,
     ContextInbound extends PilgrimContext.Context.Constraint,
@@ -75,6 +83,34 @@ export namespace PilgrimMiddleware {
     )>
   );
 
+  export namespace Invoker {
+    /**
+     * The next function provided to middleware.
+     */
+    export type Next<Context, Response> = (context: Context) => Promise<Response>;
+
+    /**
+     * Tooling refers to the object given to middleware functions.
+     * This tooling is aware of context (so far) and the event source.
+     *
+     * Additionally middlewares have a next function that allows them to continue the execution chain.
+     *
+     * @see PilgrimMiddleware.Invoker.Next
+     */
+    export type Tooling<Source, Context, NextFunction> = (
+      & PilgrimHandler.Handler.Invoker.ToolingSourceAware<Source, Context>
+      & {
+        next: NextFunction;
+      }
+    );
+  }
+
+  /**
+   * A middleware allows for the validation and passing down of context to the handler.
+   * Along with context middleware can also catch or mutate responses.
+   *
+   * @see Pilgrim.Middleware
+   */
   export type Middleware<
     Source,
     ContextInbound extends PilgrimContext.Context.Constraint,
@@ -93,6 +129,27 @@ export namespace PilgrimMiddleware {
   );
 
   export namespace Middleware {
-    export type Constraint = Middleware<any, any, any, any, any>;
+    /**
+     * A constraint for middleware types.
+     */
+    export type Constraint = (
+      Middleware<
+        // Any usage is allowed for constraints.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        any,
+        // Any usage is allowed for constraints.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        any,
+        // Any usage is allowed for constraints.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        any,
+        // Any usage is allowed for constraints.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        any,
+        // Any usage is allowed for constraints.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        any
+      >
+    );
   }
 }
