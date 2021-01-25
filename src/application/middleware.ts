@@ -1,37 +1,98 @@
-import { ContextConstraint } from './context';
+import { Grok } from '../language/grok';
+import { PilgrimContext } from './context';
+import { PilgrimHandler } from './handler';
+import { PilgrimResponse } from './response';
 
-/**
- * The middleware next function that is given within middlewares tooling.
- *
- * This function takes in the next context which can be the entire context or a partial context.
- * The given context is then deep-merged on top of the existing context that was originally given to the middleware.
- * This is done so that middleware types can contain partial contextual typing without needing to know about previous middlewares.
- */
-export type MiddlewareNextFunction<
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  GivenContext extends ContextConstraint = any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  FunctionResult = any,
-> = (context: GivenContext) => Promise<FunctionResult>;
+export namespace PilgrimMiddleware {
+  export namespace Inherit {
+      export type Context = (
+        & Context.ContextMarking
+      );
 
-/**
- * A middleware.
- *
- * A middleware provides context to the next inline middlewares or handlers.
- * They are provided with inbound information from the providers source (events and such).
- * Within the tooling is a next function that must be called if you wish to continue the chain of execution.
- * Otherwise return a new response to effectively end execution at that point.
- */
-export type Middleware<
-  GivenInbound,
-  NextContext extends ContextConstraint,
-  GivenContext extends ContextConstraint,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Response = any,
-> = (
-  tooling: {
-    inbound: GivenInbound,
-    context: GivenContext,
-    next: MiddlewareNextFunction<NextContext, Response>,
+      export namespace Context {
+        export type ContextMarking = {
+          readonly PilgrimMiddlewareInheritContextMarking: unique symbol;
+        };
+      }
+
+      export type Response = PilgrimResponse.Response<PilgrimResponse.Response.Type.Inherit, ResponseMarking>;
+      export type ResponseMarking = { readonly PilgrimMiddlewareInheritResponseMarking: unique symbol; };
+    }
+
+  export namespace Invoker {
+    export type Next<Context, Response> = (context: Context) => Promise<Response>;
+    export type Tooling<Source, Context, NextFunction> = (
+      & PilgrimHandler.Handler.Invoker.Tooling.SourceAware<Source, Context>
+      & {
+        next: NextFunction;
+      }
+    );
   }
-) => Promise<Response>;
+
+  export namespace Response {
+    export type Constraint = (
+      | PilgrimResponse.Response.Constraint
+      | Grok.Union.MutatorKind
+    );
+  }
+
+  export type Invoker<
+    Source,
+    ContextInbound extends PilgrimContext.Context.Constraint,
+    ContextOutbound extends PilgrimContext.Context.Constraint,
+    ResponseInbound,
+    ResponseOutbound,
+  > = (
+    (
+      tooling: (
+        Invoker.Tooling<
+          Source,
+          Grok.If<
+            Grok.Is.Any<ContextInbound>,
+            Inherit.Context,
+            Inherit.Context & ContextInbound
+          >,
+          Invoker.Next<
+            Grok.If<
+              Grok.Is.Any<ContextOutbound>,
+              Inherit.Context,
+              Inherit.Context & ContextOutbound
+            >,
+            Grok.If<
+              Grok.Is.Any<ResponseInbound>,
+              Inherit.Response,
+              Grok.Mutator.Remove<Inherit.Response | ResponseInbound>
+            >
+          >
+        >
+      )
+    ) => Promise<(
+      Grok.If<
+        Grok.Is.Any<ResponseOutbound>,
+        Inherit.Response,
+        Inherit.Response | ResponseOutbound
+      >
+    )>
+  );
+
+  export type Middleware<
+    Source,
+    ContextInbound extends PilgrimContext.Context.Constraint,
+    ContextOutbound extends PilgrimContext.Context.Constraint,
+    ResponseInbound,
+    ResponseOutbound,
+  > = (
+    & Invoker<Source, ContextInbound, ContextOutbound, ResponseInbound, ResponseOutbound>
+    & {
+      readonly Source?: Source;
+      readonly ContextInbound?: Grok.Data.Covariant<ContextInbound>;
+      readonly ContextOutbound?: Grok.Data.Covariant<ContextOutbound>;
+      readonly ResponseInbound?: ResponseInbound;
+      readonly ResponseOutbound?: ResponseOutbound;
+    }
+  );
+
+  export namespace Middleware {
+    export type Constraint = Middleware<any, any, any, any, any>;
+  }
+}

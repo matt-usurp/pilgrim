@@ -1,16 +1,13 @@
-import { HandlerBuilder } from '../application/handler';
-import { Lambda, LambdaEvents, LambdaHandler, LambdaWrapper } from './aws/lambda';
+import { HandlerBuilder } from '../application/handler/builder';
+import { Lambda, LambdaProviderComposer, LambdaSources } from './aws/lambda';
 
 // Re-export the lambda namespace.
 // Providing a slightly better DUX for importing.
 export { Lambda };
 
-/**
- * A typical implementation of the lambda wrapper.
- */
-const wrapper: LambdaWrapper = (executor) => async(event, context) => {
+const composer: LambdaProviderComposer = (executor) => async(event, context) => {
   return executor({
-    inbound: {
+    source: {
       event,
       context,
     },
@@ -24,30 +21,20 @@ const wrapper: LambdaWrapper = (executor) => async(event, context) => {
 };
 
 /**
- * An AWS application helper.
- *
- * @deprecated use the aws() function instead
- */
-export class AmazonWebServiceApplication {
-  /**
-   * Create a handler that can be invoked by lambda.
-   *
-   * The result of this call is a fluent interface that can be used to apply middleware.
-   * The final call should be the handle function which will wrap up the pipeline.
-   * The response from the handle function should be exported and used as the function pointer in the lambda configuration.
-   */
-  public lambda<K extends keyof LambdaEvents>(): HandlerBuilder<Lambda.Inbound<K>, Lambda.Context, LambdaHandler> {
-    return new HandlerBuilder(wrapper);
-  }
-}
-
-/**
  * Create a handler that can be invoked by lambda.
  *
  * The result of this call is a fluent interface that can be used to apply middleware.
  * The final call should be the handle function which will wrap up the pipeline.
  * The response from the handle function should be exported and used as the function pointer in the lambda configuration.
  */
-export function aws<K extends keyof LambdaEvents>(): HandlerBuilder<Lambda.Inbound<K>, Lambda.Context, LambdaHandler> {
-  return new HandlerBuilder(wrapper);
+export function aws<K extends keyof LambdaSources>(): (
+  HandlerBuilder<
+    Lambda.Source<K>,
+    LambdaProviderComposer,
+    any,
+    Lambda.Context,
+    any
+  >
+) {
+  return new HandlerBuilder(composer);
 }
