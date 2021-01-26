@@ -24,19 +24,22 @@ A context is provided to our custom handler, but it has no knowledge of what cal
 To provide context to our handler we use middleware.
 
 ```ts
+import { Pilgrim } from '@matt-usurp/pilgrim';
 import { Lambda } from '@matt-usurp/pilgrim/provider/aws';
 
-// Providing the middleware with knowledge of the kind of execution context
-// This provides the `{ event }` typed as "APIGatewayProxyEventV2"
-type Inbound = Lambda.Inbound<'aws:apigw:proxy:v2'>;
+// Providing the middleware with knowledge of the kind of event source
+// This provides the `{ source: { event } }` typed as "APIGatewayProxyEventV2"
+type Source = Lambda.Source<'aws:apigw:proxy:v2'>;
 
 type MyNewContext = { user: { id: string; }; };
-type MyMiddleware = Lambda.Middleware<Inbound, MyNewContext>;
+type MyMiddleware = Lambda.Middleware<Source, Pilgrim.Inherit, MyNewContext, Pilgrim.Inherit, Pilgrim.Inherit>;
 
 export const withUserData: MyMiddleware = async ({ event, next }) => {
   // Remember, "event" is APIGatewayProxyEventV2 here.
 
   const context = {
+    ...context,
+
     user: {
       id: await resolveUserId(event.headers['authorization']),
     },
@@ -51,9 +54,9 @@ export const withUserData: MyMiddleware = async ({ event, next }) => {
 Middleware are asyncronous so they can delay the handler execution.
 This means you can perform tasks to resolve information (in this case user id) and provide that information to the next context.
 
-> Middleware provide the `next()` function which allows for the chaining to work.
-> The response of this function is the return value of the next middleware (or the handler).
-> If you middleware wishes too--it can return its own value and not call `next()`.
+> Middleware are provided with the `next()` function which allows for the chaining to work.
+> The response of the next function is the return value of the next middleware (or the handler).
+> If your middleware wishes too--it can return its own value and not call `next()`.
 > This would be useful for cases where some validation failed and you want to return a 404 or something.
 
 This can be used within our original code sample by adding a `use()` call.
@@ -69,7 +72,7 @@ export const target = aws<'aws:apigw:proxy:v2'>()
 ### Further reading
 
 * For more examples see the `/examples` directory.
-* For supported events (such as `aws:apigw:proxy:v2`) see the `/src/provider/aws/execution` directory. Note that this is an extensible interface so if you event is missing you can add it yourself by doing the same thing. However, do feel free to PR that back in to the project!
+* For supported events (such as `aws:apigw:proxy:v2`) see the `/src/provider/aws/lambda` directory. Note that this is an extensible interface so if you event is missing you can add it yourself by doing the same thing. However, do feel free to PR that back in to the project!
 
 ## Roadmap
 
