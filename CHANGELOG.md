@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.3.1](https://github.com/matt-usurp/pilgrim/compare/v0.3.0...v0.3.1) (2021-01-26)
+
+
+### Features
+
+* implemented a source aware lambda handler type ([dc01b38](https://github.com/matt-usurp/pilgrim/commit/dc01b38fc4cc3eec5c12375af0d10cca6ed661aa))
+
+
+### Bug Fixes
+
+* source aware handler name was incorrect ([1bd5601](https://github.com/matt-usurp/pilgrim/commit/1bd560174e331f144c9f6e2b56b461ee089555e5))
+* when not a mutator just union responses ([78bcbd0](https://github.com/matt-usurp/pilgrim/commit/78bcbd0cc10acf0a34bdb3f0877d8c2ed6c39246))
+
 ## [0.3.0](https://github.com/matt-usurp/pilgrim/compare/v0.2.2...v0.3.0) (2021-01-26)
 
 
