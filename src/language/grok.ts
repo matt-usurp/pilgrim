@@ -71,12 +71,12 @@ export namespace Grok {
   }
 
   export namespace Mutator {
-    export type Kind = { readonly GrokMutatorKind: unique symbol; };
+    export type MutatorKind = { readonly GrokMutatorKind: unique symbol; };
 
     /**
      * Remove any mutators from the given value.
      */
-    export type Remove<Value> = Exclude<Value, Kind>;
+    export type Remove<Value> = Exclude<Value, MutatorKind>;
   }
 
   /**
@@ -110,8 +110,8 @@ export namespace Grok {
   }
 
   export namespace Union {
-    export type MutatorKind = (
-      & Grok.Mutator.Kind
+    export type UnionMutatorKind = (
+      & Grok.Mutator.MutatorKind
       & { readonly GrokUnionMutatorKind: unique symbol; }
     );
 
@@ -127,7 +127,7 @@ export namespace Grok {
        * For more information "open-check" see the documentation on the main Grok namespace.
        */
       export type Without<Value> = (
-        & MutatorKind
+        & UnionMutatorKind
         & { readonly LangUnionActionWithoutKind: unique symbol; }
         & { value: Value; }
       );
@@ -138,7 +138,7 @@ export namespace Grok {
      */
     export type Mutate<Value, Given> = (
       // First check the given value is a mutator.
-      Given extends MutatorKind
+      Given extends UnionMutatorKind
         ? (
           // If the given value is "Grok.Union.Mutator.Without" then we need to perform its action.
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
