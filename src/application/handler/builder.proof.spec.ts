@@ -32,8 +32,9 @@ const withPassThrough: (
     PilgrimMiddleware.Inherit,
     PilgrimMiddleware.Inherit
   >
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-) = {} as any;
+) = async({ context, next }) => {
+  return next(context);
+};
 
 const u01 = builder.use(withPassThrough);
 
@@ -51,8 +52,9 @@ const withKnownTestContext: (
     PilgrimMiddleware.Inherit,
     PilgrimMiddleware.Inherit
   >
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-) = {} as any;
+) = async({ context, next }) => {
+  return next(context);
+};
 
 const u02 = u01.use(withKnownTestContext);
 
@@ -70,8 +72,9 @@ const withKnownTestContextSubset: (
     PilgrimMiddleware.Inherit,
     PilgrimMiddleware.Inherit
   >
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-) = {} as any;
+) = async({ context, next }) => {
+  return next(context);
+};
 
 const u03 = u02.use(withKnownTestContextSubset);
 
@@ -87,8 +90,13 @@ const withNewContextRandom: (
     PilgrimMiddleware.Inherit,
     PilgrimMiddleware.Inherit
   >
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-) = {} as any;
+) = async({ context, next }) => {
+  return next({
+    ...context,
+
+    random: 123,
+  });
+};
 
 const u04 = u03.use(withNewContextRandom);
 const u05 = u04.use(withPassThrough);
@@ -106,8 +114,13 @@ const withNewContextRandomAndActiveOutput: (
     PilgrimMiddleware.Inherit,
     PilgrimMiddleware.Inherit
   >
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-) = {} as any;
+) = async({ context, next }) => {
+  return next({
+    ...context,
+
+    active: context.random > 50,
+  });
+};
 
 const u06 = u05.use(withNewContextRandomAndActiveOutput);
 
@@ -123,10 +136,19 @@ const m6: (
     PilgrimMiddleware.Inherit,
     PilgrimMiddleware.Inherit,
     AnotherResponse,
-    PilgrimMiddleware.Inherit
+    TestResponse
   >
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-) = {} as any;
+) = async({ context, next }) => {
+  const response = await next(context);
+
+  if (response.type === 'another') {
+    return {
+      body: response.type,
+    };
+  }
+
+  return response;
+};
 
 const u07 = u06.use(m6);
 
@@ -138,8 +160,9 @@ const m7: (
     PilgrimMiddleware.Inherit,
     AnotherResponse
   >
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-) = {} as any;
+) = async({ context, next }) => {
+  return next(context);
+};
 
 const u08 = u07.use(m7);
 
@@ -151,8 +174,9 @@ const m8: (
     Grok.Union.Mutator.Without<TestResponse>,
     PilgrimMiddleware.Inherit
   >
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-) = {} as any;
+) = async({ context, next }) => {
+  return next(context);
+};
 
 const u09 = u08.use(m8);
 
