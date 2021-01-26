@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.3.0](https://github.com/matt-usurp/pilgrim/compare/v0.2.2...v0.3.0) (2021-01-26)
+
+
+### Features
+
+* aws lambda event sources moved to own file ([9c130e3](https://github.com/matt-usurp/pilgrim/commit/9c130e3a73990f3db78c5e62d3a2b83a25aae63e))
+* event sources are defined with an object ([8583492](https://github.com/matt-usurp/pilgrim/commit/858349220199d36232a95dd3678b211a287a9044))
+* major rewrite allowing typed responses ([885386d](https://github.com/matt-usurp/pilgrim/commit/885386d2ff6aa8480002b0a0861d1e9e05d1f25b))
+* small type language to help with more complex types ([e8e499f](https://github.com/matt-usurp/pilgrim/commit/e8e499f4e860cd1387ce53fe926a40f418312e20))
+* updated compiler settings ([0b57762](https://github.com/matt-usurp/pilgrim/commit/0b5776241eae5eec750d936910b36e61ed70e299))
+
 ### [0.2.2](https://github.com/matt-usurp/pilgrim/compare/v0.2.1...v0.2.2) (2021-01-23)
 
 
