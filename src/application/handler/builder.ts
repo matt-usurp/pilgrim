@@ -75,7 +75,11 @@ export class HandlerBuilder<
             Grok.If<
               Grok.Is.Any<InferResponseInbound>,
               BuilderResponse,
-              Grok.Union.Mutate<BuilderResponse, InferResponseInbound>
+              (
+                InferResponseInbound extends Grok.Union.UnionMutatorKind
+                  ? Grok.Union.Mutate<BuilderResponse, InferResponseInbound>
+                  : BuilderResponse | InferResponseInbound
+              )
             >
           )
           : never
