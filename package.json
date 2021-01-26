@@ -1,7 +1,7 @@
 {
   "version": "0.3.0",
   "name": "@matt-usurp/pilgrim",
-  "description": "A bootstrap framework for serverless providers",
+  "description": "A complete type-safe implementation of middleware and handlers for serverless functions",
   "author": "Matthew Rose <matt.usurp@gmail.com>",
   "license": "MIT",
   "main": "main.js",
