@@ -1,3 +1,5 @@
+import { PilgrimContext } from './context';
+
 /**
  * Pilgrim handler types.
  *
@@ -15,7 +17,10 @@ export namespace PilgrimHandler {
    *
    * @see Pilgrim.Handler
    */
-  export type Handler<Context, Response> = Handler.Invoker<Handler.Invoker.Tooling<Context>, Response>;
+  export type Handler<
+    Context extends PilgrimContext.Context.Constraint,
+    Response
+  > = Handler.Invoker<Handler.Invoker.Tooling<Context>, Response>;
 
   export namespace Handler {
     /**

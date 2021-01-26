@@ -20,7 +20,10 @@ export namespace Pilgrim {
    * @see Pilgrim.Middleware for more information on middleware and context
    * @see Pilgrim.Handler.SourceAware for an event source aware handler implementation
    */
-  export type Handler<Context, Response> = PilgrimHandler.Handler<Context, Response>;
+  export type Handler<
+    Context extends PilgrimContext.Context.Constraint,
+    Response
+  > = PilgrimHandler.Handler<Context, Response>;
 
   export namespace Handler {
     /**
@@ -31,7 +34,11 @@ export namespace Pilgrim {
      * @see Pilgrim.Handler for the more recommended handler implementation
      * @see Pilgrim.Middleware for more information on middleware and context
      */
-    export type SourceAware<Source, Context, Response> = PilgrimHandler.Handler.SourceAware<Source, Context, Response>;
+    export type SourceAware<
+      Source,
+      Context extends PilgrimContext.Context.Constraint,
+      Response
+    > = PilgrimHandler.Handler.SourceAware<Source, Context, Response>;
   }
 
   /**

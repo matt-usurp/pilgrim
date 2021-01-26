@@ -75,6 +75,20 @@ export namespace Lambda {
     Response
   > = PilgrimHandler.Handler<Context, Response>;
 
+  export namespace Handler {
+    /**
+     * An event source aware lambda handler.
+     *
+     * @see PilgrimHandler.Handler
+     * @see Pilgrim.Handler.SourceAware
+     */
+    export type SourceAware<
+      Source extends Source.Constraint,
+      Context extends PilgrimContext.Context.Constraint,
+      Response
+    > = PilgrimHandler.Handler.SourceAware<Source, Context, Response>;
+  }
+
   /**
    * A middleware specialised for lambda.
    *
