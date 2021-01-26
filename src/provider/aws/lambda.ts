@@ -20,10 +20,15 @@ export namespace Lambda {
    */
   export type Event<Identifier extends keyof LambdaEventSource> = LambdaEventSource[Identifier];
 
+  export namespace Event {
+    export type GetEvent<Identifier extends keyof LambdaEventSource> = Event<Identifier>['Event'];
+    export type GetResponse<Identifier extends keyof LambdaEventSource> = Event<Identifier>['Response'];
+  }
+
   /**
    * Helper type for creating lambda sources from the given identifier.
    */
-  export type Source<Identifier extends keyof LambdaEventSource> = Source.Definition<LambdaEventSource[Identifier]['Event']>;
+  export type Source<Identifier extends keyof LambdaEventSource> = Source.Definition<Event.GetEvent<Identifier>>;
 
   export namespace Source {
     /**

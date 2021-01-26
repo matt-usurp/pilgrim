@@ -1,3 +1,4 @@
+import { Pilgrim } from '../../src/main';
 import { aws, Lambda } from '../../src/provider/aws';
 
 /**
@@ -10,9 +11,9 @@ type Inbound = Lambda.Source<'aws:apigw:proxy:v2'>;
  * When we provide them within `use()` statements the context is built up.
  * The handler can the make use of the combined context to perform some actions.
  */
-declare const withFilters: Lambda.Middleware<Inbound, any, { filters: { search: string }; }, any, any>;
-declare const withPagination: Lambda.Middleware<Inbound, any, { pagination: { page: number; limit: number }; }, any, any>;
-declare const withFilterValidation : Lambda.Middleware.WithoutSource<{ filters: { search: string }; }, any, any, any>;
+declare const withFilters: Lambda.Middleware<Inbound, Pilgrim.Inherit, { filters: { search: string }; }, Pilgrim.Inherit, Pilgrim.Inherit>;
+declare const withPagination: Lambda.Middleware<Inbound, Pilgrim.Inherit, { pagination: { page: number; limit: number }; }, Pilgrim.Inherit, Pilgrim.Inherit>;
+declare const withFilterValidation : Lambda.Middleware.WithoutSource<{ filters: { search: string }; }, Pilgrim.Inherit, Pilgrim.Inherit, Pilgrim.Inherit>;
 
 const target = aws<'aws:apigw:proxy:v2'>()
   .use(withFilters)

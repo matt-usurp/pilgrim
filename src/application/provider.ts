@@ -43,4 +43,24 @@ export namespace PilgrimProvider {
     InvokerResponse,
     ProviderFunction extends FunctionConstraint,
   > = (invoker: InvocationFunction<Source, InvokerContext, InvokerResponse>) => ProviderFunction;
+
+  export namespace CompositionFunction {
+    /**
+     * A constraint for provider composition function types.
+     */
+    export type Constraint<Source> = (
+      CompositionFunction<
+        Source,
+        // Any usage is allowed for constraints.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        any,
+        // Any usage is allowed for constraints.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        any,
+        // Any usage is allowed for constraints.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        any
+      >
+    );
+  }
 }
