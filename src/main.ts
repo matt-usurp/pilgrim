@@ -4,6 +4,13 @@ import { PilgrimMiddleware } from './application/middleware';
 
 export namespace Pilgrim {
   /**
+   * A value that can be used in place where a value should be inherited.
+   *
+   * @see PilgrimMiddleware.Inherit
+   */
+  export type Inherit = PilgrimMiddleware.Inherit;
+
+  /**
    * A handler function that takes the given context and returns a specified response.
    *
    * Handlers are not made aware of the event source by default.

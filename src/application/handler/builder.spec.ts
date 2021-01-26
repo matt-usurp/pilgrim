@@ -30,6 +30,9 @@ type TestProviderComposer<
   >
 );
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type PassThroughTestProviderComposer = TestProviderComposer<any, any>;
+
 type TestHandlerBuilder<
   ResponseConstraint,
   Response extends ResponseConstraint,
@@ -43,6 +46,9 @@ type TestHandlerBuilder<
     Response
   >
 );
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type PassThroughTestHandlerBuilder = TestHandlerBuilder<any, any, any>;
 
 /**
  * A test wrapper that appends its own string to the executors response.
@@ -64,7 +70,7 @@ const composingTextWrapper: TestProviderComposer<string, string> = (executor) =>
 /**
  * A pass through wrapper that just gives the executions response.
  */
-const passThroughWrapper: TestProviderComposer<any, any> = (executor) => async() => {
+const passThroughWrapper: PassThroughTestProviderComposer = (executor) => async() => {
   return executor({
     source: {
       test: true,
@@ -118,9 +124,20 @@ describe('src/application/handler/builder.ts', (): void => {
       });
 
       it('given single middleware, middleware changes response from handler, new response given as execution response', async() => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        type CaseMiddleware = (
+          PilgrimMiddleware.Middleware<
+            TestSource,
+            PilgrimMiddleware.Inherit,
+            PilgrimMiddleware.Inherit,
+            string,
+            string
+          >
+        );
+
         const builder: TestHandlerBuilder<string, string, string> = new HandlerBuilder(composingTextWrapper);
         const handler =builder
-          .use<PilgrimMiddleware.Middleware<any, any, any, string, string>>(async({ context, next }) => {
+          .use<CaseMiddleware>(async({ context, next }) => {
             const previous = await next(context);
 
             return `test-middleware:${previous}`;
@@ -135,9 +152,12 @@ describe('src/application/handler/builder.ts', (): void => {
       });
 
       it('given single middleware, middleware changes given context, handler receives new context', async() => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        type CaseMiddleware = PilgrimMiddleware.Middleware<any, any, { theme: string }, string, string>;
+
         const builder: TestHandlerBuilder<string, string, string> = new HandlerBuilder(composingTextWrapper);
         const handler = builder
-          .use<PilgrimMiddleware.Middleware<any, any, { theme: string }, string, string>>(async({ context, next } ) => {
+          .use<CaseMiddleware>(async({ context, next } ) => {
             return next({
               ...context,
 
@@ -154,9 +174,20 @@ describe('src/application/handler/builder.ts', (): void => {
       });
 
       it('given multiple middleware, each can change response of previous, given as execution response', async() => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        type CaseMiddleware = (
+          PilgrimMiddleware.Middleware<
+            TestSource,
+            PilgrimMiddleware.Inherit,
+            PilgrimMiddleware.Inherit,
+            TestHttpResponse,
+            TestHttpResponse
+          >
+        );
+
         const builder: TestHandlerBuilder<TestHttpResponse, TestHttpResponse, TestHttpResponse> = new HandlerBuilder(passThroughWrapper);
         const handler = builder
-          .use<PilgrimMiddleware.Middleware<any, any, any, TestHttpResponse, TestHttpResponse>>(async({ context, next }) => {
+          .use<CaseMiddleware>(async({ context, next }) => {
             const previous = await next(context);
 
             if (previous.type === 'http') {
@@ -171,7 +202,7 @@ describe('src/application/handler/builder.ts', (): void => {
 
             return previous;
           })
-          .use<PilgrimMiddleware.Middleware<any, any, any, TestHttpResponse, TestHttpResponse>>(async({ context, next }) => {
+          .use<CaseMiddleware>(async({ context, next }) => {
             const previous = await next(context);
 
             if (previous.type === 'http') {
@@ -184,6 +215,7 @@ describe('src/application/handler/builder.ts', (): void => {
 
             return previous;
           })
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .handle<PilgrimHandler.Handler<any, TestHttpResponse>>(async() => {
             return http({
               headers: {},
@@ -203,9 +235,24 @@ describe('src/application/handler/builder.ts', (): void => {
       });
 
       it('given two middleware, altering contexts are merged for handler, handler recieves merged context', async() => {
+        type ExtraMiddlewareContext = {
+          headers: Record<string, string | number>
+        };
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        type CaseMiddleware = (
+          PilgrimMiddleware.Middleware<
+            TestSource,
+            PilgrimMiddleware.Inherit,
+            ExtraMiddlewareContext,
+            PilgrimMiddleware.Inherit,
+            PilgrimMiddleware.Inherit
+          >
+        );
+
         const builder: TestHandlerBuilder<TestHttpResponse, TestHttpResponse, TestHttpResponse> = new HandlerBuilder(passThroughWrapper);
         const handler = builder
-          .use<PilgrimMiddleware.Middleware<any, any, { headers: Record<string, string | number> }, any, any>>(async({ context, next }) => {
+          .use<CaseMiddleware>(async({ context, next }) => {
             return next({
               ...context,
 
@@ -214,7 +261,7 @@ describe('src/application/handler/builder.ts', (): void => {
               }
             });
           })
-          .use<PilgrimMiddleware.Middleware<any, any, { headers: Record<string, string | number> }, any, any>>(async({ context, next }) => {
+          .use<CaseMiddleware>(async({ context, next }) => {
             return next({
               ...context,
 
@@ -225,6 +272,7 @@ describe('src/application/handler/builder.ts', (): void => {
             });
           })
           .handle(async({ context }) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             return context as any;
           });
 
@@ -240,9 +288,20 @@ describe('src/application/handler/builder.ts', (): void => {
       });
 
       it('given multiple middleware, altering contexts are deep merged, handler given deep merged context', async() => {
-        const builder: TestHandlerBuilder<any, any, any> = new HandlerBuilder(passThroughWrapper);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        type CaseMiddleware = (
+          PilgrimMiddleware.Middleware<
+            TestSource,
+            PilgrimMiddleware.Inherit,
+            { some: unknown },
+            PilgrimMiddleware.Inherit,
+            PilgrimMiddleware.Inherit
+          >
+        );
+
+        const builder: PassThroughTestHandlerBuilder = new HandlerBuilder(passThroughWrapper);
         const handler = builder
-          .use<PilgrimMiddleware.Middleware<any, any, { some: any }, any, any>>(async({ context, next }) => {
+          .use<CaseMiddleware>(async({ context, next }) => {
             return next({
               ...context,
 
@@ -255,7 +314,7 @@ describe('src/application/handler/builder.ts', (): void => {
               }
             });
           })
-          .use<PilgrimMiddleware.Middleware<any, any, { some: any }, any, any>>(async({ context, next }) => {
+          .use<CaseMiddleware>(async({ context, next }) => {
             return next({
               ...context,
 
@@ -268,7 +327,7 @@ describe('src/application/handler/builder.ts', (): void => {
               }
             });
           })
-          .use<PilgrimMiddleware.Middleware<any, any, { some: any }, any, any>>(async({ context, next }) => {
+          .use<CaseMiddleware>(async({ context, next }) => {
             return next({
               ...context,
 
@@ -282,7 +341,7 @@ describe('src/application/handler/builder.ts', (): void => {
             });
           })
           .handle(async({ context }) => {
-            return context as any;
+            return context;
           });
 
         const response = await handler();
@@ -302,19 +361,29 @@ describe('src/application/handler/builder.ts', (): void => {
       });
 
       it('given several middleware, execution order is as expected', async() => {
+        type CaseMiddleware = (
+          PilgrimMiddleware.Middleware<
+            TestSource,
+            PilgrimMiddleware.Inherit,
+            PilgrimMiddleware.Inherit,
+            string,
+            string
+          >
+        );
+
         const builder: TestHandlerBuilder<string, string, string> = new HandlerBuilder(composingTextWrapper);
         const handler = builder
-          .use<PilgrimMiddleware.Middleware<any, any, any, string, string>>(async({ context, next }) => {
+          .use<CaseMiddleware>(async({ context, next }) => {
             const previous = await next(context);
 
             return `first:${previous}`;
           })
-          .use<PilgrimMiddleware.Middleware<any, any, any, string, string>>(async({ context, next }) => {
+          .use<CaseMiddleware>(async({ context, next }) => {
             const previous = await next(context);
 
             return `second:${previous}`;
           })
-          .use<PilgrimMiddleware.Middleware<any, any, any, string, string>>(async({ context, next }) => {
+          .use<CaseMiddleware>(async({ context, next }) => {
             const previous = await next(context);
 
             return `third:${previous}`;

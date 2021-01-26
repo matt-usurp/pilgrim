@@ -57,15 +57,15 @@ export function aws<K extends keyof LambdaEventSource>(): (
   HandlerBuilder<
     Lambda.Source<K>,
     LambdaProviderCompositionFunction<
-      Lambda.Event<K>['Event'],
-      Lambda.Event<K>['Response'],
-      Lambda.Event<K>['Response']
+      Lambda.Event.GetEvent<K>,
+      Lambda.Event.GetResponse<K>,
+      Lambda.Event.GetResponse<K>
     >,
     // Response constraint cannot be enforced right now as we do not enforce a common response type.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     any,
     Lambda.Context,
-    Lambda.Event<K>['Response']
+    Lambda.Event.GetResponse<K>
   >
 ) {
   return new HandlerBuilder(composer);

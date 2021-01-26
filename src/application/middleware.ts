@@ -13,6 +13,18 @@ import { PilgrimResponse } from './response';
  */
 export namespace PilgrimMiddleware {
   /**
+   * A value that represents inherit.
+   *
+   * Although this value is essentially any it should not be abused.
+   * It is recommended to use this type instead of "any" directly as the implementation might change.
+   * Currently "any" is resolved to inherit values but at some point it might change to a marked symbol.
+   */
+  export type Inherit = (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    any
+  );
+
+  /**
    * Inherit types are provided to middleware for certain use cases.
    *
    * In most cases they are used to ensure the given data is passed down the chain.

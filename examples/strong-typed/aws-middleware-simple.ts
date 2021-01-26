@@ -1,3 +1,4 @@
+import { Pilgrim } from '../../src/main';
 import { aws, Lambda } from '../../src/provider/aws';
 
 /**
@@ -9,19 +10,27 @@ type Source = Lambda.Source<'aws:apigw:proxy:v2'>;
  * This represents our handler.
  *
  * As you can see here the lambda requires some context that needs resolving.
- * If we were to just try and consume this handler with `app.lambda('..').handler(handler)` we would get an error.
+ * If we were to just try and consume this handler with `aws('..').handler(handler)` we would get an error.
  * The base context is `Lambda.Context` and we have no way to provide the required context information.
  */
-declare const handler: Lambda.Handler<{ user: string; }, any>;
+declare const handler: Lambda.Handler<{ user: string; }, Pilgrim.Inherit>;
 
 /**
  * Here we define a middleware.
  *
  * It takes the same inbound as we need access to the event information.
- * However it is possible to use an "Eventless" variation if you are frabricating context.
+ * However it is possible to use an "WithoutSource" variation if you are frabricating context.
  * We define that it returns some additional context that when used should satisfy our handler.
  */
-declare const middleware: Lambda.Middleware<Source, any, { user: string }, any, any>;
+declare const middleware: (
+  Lambda.Middleware<
+    Source,
+    Pilgrim.Inherit, // Context expected inbound (from up chain)
+    { user: string }, // Context provided by this middleware (outbound)
+    Pilgrim.Inherit, // Response mutation parameters.
+    Pilgrim.Inherit // Response mutation parameters.
+  >
+);
 
 const target = aws<'aws:apigw:proxy:v2'>()
   .use(middleware)
