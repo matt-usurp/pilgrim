@@ -1,6 +1,6 @@
 # Pilgrim
 
-A type-safe platform handler/framework for AWS lambda with middleware support.
+A complete type-safe implementation of middleware and handlers for serverless functions.
 
 ## Usage
 
