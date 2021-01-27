@@ -3,13 +3,8 @@ import { PilgrimMiddleware } from '../middleware';
 import { PilgrimResponse } from '../response';
 import { HandlerBuilder } from './builder';
 
-// eslint-disable-next-line jest/no-disabled-tests
-it.skip('unknown', () => {
-  return;
-});
-
 type TestSource = { source: number; };
-type TestResponse = { body: string; };
+type TestResponse = PilgrimResponse.Response<'test:default', { body: string; }>;
 type TestContext = {
   request: string;
   time: number;
@@ -17,7 +12,7 @@ type TestContext = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const builder = new HandlerBuilder<TestSource, any, any, TestContext, TestResponse>({});
+const builder = new HandlerBuilder<TestSource, any, TestContext, TestResponse>({});
 
 /**
  * A middleware that does nothing for the types.
@@ -128,7 +123,7 @@ const u06 = u05.use(withNewContextRandomAndActiveOutput);
 /// --- Experimental
 /// ---
 
-type AnotherResponse = PilgrimResponse.Response<'another', { test: boolean; }>;
+type AnotherResponse = PilgrimResponse.Response<'test:another', { test: boolean; }>;
 
 const m6: (
   PilgrimMiddleware.Middleware<
@@ -141,9 +136,14 @@ const m6: (
 ) = async({ context, next }) => {
   const response = await next(context);
 
-  if (response.type === 'another') {
+  if (response.type === 'test:another') {
     return {
-      body: response.type,
+      type: 'test:default',
+      value: {
+        body: response.value.test
+          ? 'true'
+          : 'false'
+      },
     };
   }
 
@@ -161,7 +161,9 @@ const m7: (
     AnotherResponse
   >
 ) = async({ context, next }) => {
-  return next(context);
+  const response = await next(context);
+
+  return response;
 };
 
 const u08 = u07.use(m7);
@@ -175,7 +177,9 @@ const m8: (
     PilgrimMiddleware.Inherit
   >
 ) = async({ context, next }) => {
-  return next(context);
+  const response = await next(context);
+
+  return response;
 };
 
 const u09 = u08.use(m8);
