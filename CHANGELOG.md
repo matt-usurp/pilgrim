@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.3.2](https://github.com/matt-usurp/pilgrim/compare/v0.3.1...v0.3.2) (2021-01-27)
+
+
+### Features
+
+* lambda sources are validated before being used ([c31ec96](https://github.com/matt-usurp/pilgrim/commit/c31ec968e9ff69c55b8889c52eb9e7c98550d2de))
+* response structure enforced with helper functions available ([cd0866b](https://github.com/matt-usurp/pilgrim/commit/cd0866b77170c44fff15f0286f8a9a866133aabc))
+
 ### [0.3.1](https://github.com/matt-usurp/pilgrim/compare/v0.3.0...v0.3.1) (2021-01-26)
 
 
