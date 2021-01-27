@@ -25,6 +25,19 @@ export namespace Grok {
   );
 
   /**
+   * True when both values are true.
+   */
+  export type And<A extends boolean, B extends boolean> = (
+    A extends true
+      ? (
+        B extends true
+          ? true
+          : false
+      )
+      : false
+  );
+
+  /**
    * The "is" namespace represents a series of assert type-functions.
    *
    * These functions will return true when a given value matches its signature.
