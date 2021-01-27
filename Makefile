@@ -124,11 +124,16 @@ package.build.setup:
 package.build.compile:
 	npx tsc -p build/tsconfig.json
 
+	find build/workspace -type f -name "*.proof.js" -delete
+	find build/workspace -type f -name "*.proof.d.js" -delete
+
 	find build/workspace -type f -name "*.spec.js" -delete
 	find build/workspace -type f -name "*.spec.js.map" -delete
 	find build/workspace -type f -name "*.spec.d.ts" -delete
 
 package.build.compile.verify:
+	test ! -f build/workspace/application/handler/builder.spec.js
+	test ! -f build/workspace/application/handler/builder.proof.js
 	test ! -f build/workspace/application/handler.spec.js
 
 	test -f build/workspace/application/handler.js
