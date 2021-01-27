@@ -1,25 +1,32 @@
 import { PilgrimHandler } from '../handler';
 import { PilgrimMiddleware } from '../middleware';
 import { PilgrimProvider } from '../provider';
-import { PilgrimResponse, PilgrimResponseFactory } from '../response';
+import { PilgrimResponse } from '../response';
 import { HandlerBuilder } from './builder';
+import * as response from '../../response';
 
 type TestSource = { test: true; };
 type TestContext = { from: string; };
 
 type TestHttpResponseData = {
+  status: number;
   headers: Record<string, string>;
-  body: string;
+  body: unknown;
 };
 
-type TestHttpResponse = PilgrimResponse.Response<'http', TestHttpResponseData>;
+type TestStringResponse = PilgrimResponse.Response<'test:string', string>;
+type TestHttpResponse = PilgrimResponse.Response<'test:http', TestHttpResponseData>;
 
-const http = (data: TestHttpResponseData): TestHttpResponse => {
-  return (new PilgrimResponseFactory).create<TestHttpResponse>('http', data);
+const str = (value: string): TestStringResponse => {
+  return response.create<TestStringResponse>('test:string', value);
+};
+
+const http = (value: TestHttpResponseData): TestHttpResponse => {
+  return response.create<TestHttpResponse>('test:http', value);
 };
 
 type TestProviderComposer<
-  ChainResponse,
+  ChainResponse extends PilgrimResponse.Response.Constraint,
   ProviderResponse
 > = (
   PilgrimProvider.CompositionFunction<
@@ -34,26 +41,24 @@ type TestProviderComposer<
 type PassThroughTestProviderComposer = TestProviderComposer<any, any>;
 
 type TestHandlerBuilder<
-  ResponseConstraint,
-  Response extends ResponseConstraint,
+  Response extends PilgrimResponse.Response.Constraint,
   ProviderResponse
 > = (
   HandlerBuilder<
     TestSource,
     TestProviderComposer<Response, ProviderResponse>,
-    ResponseConstraint,
     TestContext,
     Response
   >
 );
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type PassThroughTestHandlerBuilder = TestHandlerBuilder<any, any, any>;
+type PassThroughTestHandlerBuilder = TestHandlerBuilder<any, any>;
 
 /**
  * A test wrapper that appends its own string to the executors response.
  */
-const composingTextWrapper: TestProviderComposer<string, string> = (executor) => async() => {
+const composingTextWrapper: TestProviderComposer<TestStringResponse, string> = (executor) => async() => {
   const previous = await executor({
     source: {
       test: true,
@@ -64,7 +69,9 @@ const composingTextWrapper: TestProviderComposer<string, string> = (executor) =>
     },
   });
 
-  return `text-composer(${JSON.stringify(previous)})`;
+  const unwrapped = response.unwrap(previous);
+
+  return `text-composer(${JSON.stringify(unwrapped)})`;
 };
 
 /**
@@ -86,12 +93,12 @@ describe('src/application/handler/builder.ts', (): void => {
   describe('HandlerBuilder', (): void => {
     describe('custom wrapper implementation', (): void => {
       it('given wrapper that ignores executor, returns fixed value', async(): Promise<void> => {
-        const wrapper: TestProviderComposer<string, string> = () => async() => {
+        const wrapper: TestProviderComposer<TestStringResponse, string> = () => async() => {
           return 'assert:wrapper:response';
         };
 
         const handler = (new HandlerBuilder(wrapper)).handle(async() => {
-          return 'ignored:handler:response';
+          return str('ignored:handler:response');
         });
 
         const result = await handler();
@@ -102,9 +109,9 @@ describe('src/application/handler/builder.ts', (): void => {
 
     describe('use cases', (): void => {
       it('given no middleware, response from handler is given as execution response', async() => {
-        const builder: TestHandlerBuilder<string, string, string> = new HandlerBuilder(composingTextWrapper);
+        const builder: TestHandlerBuilder<TestStringResponse, string> = new HandlerBuilder(composingTextWrapper);
         const handler = builder.handle(async() => {
-          return 'handler-response';
+          return str('handler-response');
         });
 
         const response = await handler();
@@ -113,9 +120,9 @@ describe('src/application/handler/builder.ts', (): void => {
       });
 
       it('given no middleware, base context is given to handler', async() => {
-        const builder: TestHandlerBuilder<string, string, string> = new HandlerBuilder(composingTextWrapper);
+        const builder: TestHandlerBuilder<TestStringResponse, string> = new HandlerBuilder(composingTextWrapper);
         const handler = builder.handle(async({ context }) => {
-          return context.from;
+          return str(context.from);
         });
 
         const response = await handler();
@@ -124,26 +131,25 @@ describe('src/application/handler/builder.ts', (): void => {
       });
 
       it('given single middleware, middleware changes response from handler, new response given as execution response', async() => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         type CaseMiddleware = (
           PilgrimMiddleware.Middleware<
             TestSource,
             PilgrimMiddleware.Inherit,
             PilgrimMiddleware.Inherit,
-            string,
-            string
+            TestStringResponse,
+            TestStringResponse
           >
         );
 
-        const builder: TestHandlerBuilder<string, string, string> = new HandlerBuilder(composingTextWrapper);
-        const handler =builder
+        const builder: TestHandlerBuilder<TestStringResponse, string> = new HandlerBuilder(composingTextWrapper);
+        const handler = builder
           .use<CaseMiddleware>(async({ context, next }) => {
             const previous = await next(context);
 
-            return `test-middleware:${previous}`;
+            return str(`test-middleware:${previous.value}`);
           })
           .handle(async() => {
-            return 'handler-response';
+            return str('handler-response');
           });
 
         const response = await handler();
@@ -152,10 +158,17 @@ describe('src/application/handler/builder.ts', (): void => {
       });
 
       it('given single middleware, middleware changes given context, handler receives new context', async() => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        type CaseMiddleware = PilgrimMiddleware.Middleware<any, any, { theme: string }, string, string>;
+        type CaseMiddleware = (
+          PilgrimMiddleware.Middleware<
+            TestSource,
+            PilgrimMiddleware.Inherit,
+            { theme: string },
+            TestStringResponse,
+            TestStringResponse
+          >
+        );
 
-        const builder: TestHandlerBuilder<string, string, string> = new HandlerBuilder(composingTextWrapper);
+        const builder: TestHandlerBuilder<TestStringResponse, string> = new HandlerBuilder(composingTextWrapper);
         const handler = builder
           .use<CaseMiddleware>(async({ context, next } ) => {
             return next({
@@ -165,7 +178,7 @@ describe('src/application/handler/builder.ts', (): void => {
             });
           })
           .handle(async({ context }) => {
-            return `handler-response:${context.theme}`;
+            return str(`handler-response:${context.theme}`);
           });
 
         const response = await handler();
@@ -174,8 +187,17 @@ describe('src/application/handler/builder.ts', (): void => {
       });
 
       it('given multiple middleware, each can change response of previous, given as execution response', async() => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        type CaseMiddleware = (
+        type CaseMiddlewareOne = (
+          PilgrimMiddleware.Middleware<
+            TestSource,
+            PilgrimMiddleware.Inherit,
+            PilgrimMiddleware.Inherit,
+            TestHttpResponse,
+            PilgrimResponse.Preset.Http
+          >
+        );
+
+        type CaseMiddlewareTwo = (
           PilgrimMiddleware.Middleware<
             TestSource,
             PilgrimMiddleware.Inherit,
@@ -185,52 +207,61 @@ describe('src/application/handler/builder.ts', (): void => {
           >
         );
 
-        const builder: TestHandlerBuilder<TestHttpResponse, TestHttpResponse, TestHttpResponse> = new HandlerBuilder(passThroughWrapper);
+        const builder: TestHandlerBuilder<PilgrimResponse.Preset.Http, PilgrimResponse.Preset.Http> = new HandlerBuilder(passThroughWrapper);
         const handler = builder
-          .use<CaseMiddleware>(async({ context, next }) => {
+          .use<CaseMiddlewareOne>(async({ context, next }) => {
             const previous = await next(context);
 
-            if (previous.type === 'http') {
+            if (previous.type === 'test:http') {
               return {
-                ...previous,
-
-                headers: {
-                  'content-type': 'application/json',
-                }
+                type: 'http',
+                value: {
+                  status: previous.value.status,
+                  headers: previous.value.headers,
+                  body: JSON.stringify(previous.value.body),
+                },
               };
             }
 
             return previous;
           })
-          .use<CaseMiddleware>(async({ context, next }) => {
+          .use<CaseMiddlewareTwo>(async({ context, next }) => {
             const previous = await next(context);
 
-            if (previous.type === 'http') {
+            if (previous.type === 'test:http') {
               return {
-                ...previous,
+                type: 'test:http',
+                value: {
+                  ...previous.value,
 
-                body: JSON.stringify(previous.body),
+                  headers: {
+                    'content-type': 'application/nonsense',
+                  },
+                },
               };
             }
 
             return previous;
           })
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .handle<PilgrimHandler.Handler<any, TestHttpResponse>>(async() => {
+          .handle<PilgrimHandler.Handler<PilgrimMiddleware.Inherit, TestHttpResponse>>(async() => {
             return http({
+              status: 200,
               headers: {},
-              body: {} as unknown as string
+              body: {
+                foo: 'handler:response',
+                bar: true,
+              },
             });
           });
 
         const response = await handler();
 
-        expect(response).toEqual({
-          type: 'http',
+        expect(response.value).toEqual({
+          status: 200,
           headers: {
-            'content-type': 'application/json',
+            'content-type': 'application/nonsense',
           },
-          body: '{}',
+          body: '{"foo":"handler:response","bar":true}',
         });
       });
 
@@ -239,7 +270,6 @@ describe('src/application/handler/builder.ts', (): void => {
           headers: Record<string, string | number>
         };
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         type CaseMiddleware = (
           PilgrimMiddleware.Middleware<
             TestSource,
@@ -250,7 +280,7 @@ describe('src/application/handler/builder.ts', (): void => {
           >
         );
 
-        const builder: TestHandlerBuilder<TestHttpResponse, TestHttpResponse, TestHttpResponse> = new HandlerBuilder(passThroughWrapper);
+        const builder: TestHandlerBuilder<TestHttpResponse, TestHttpResponse> = new HandlerBuilder(passThroughWrapper);
         const handler = builder
           .use<CaseMiddleware>(async({ context, next }) => {
             return next({
@@ -366,30 +396,30 @@ describe('src/application/handler/builder.ts', (): void => {
             TestSource,
             PilgrimMiddleware.Inherit,
             PilgrimMiddleware.Inherit,
-            string,
-            string
+            TestStringResponse,
+            TestStringResponse
           >
         );
 
-        const builder: TestHandlerBuilder<string, string, string> = new HandlerBuilder(composingTextWrapper);
+        const builder: TestHandlerBuilder<TestStringResponse, string> = new HandlerBuilder(composingTextWrapper);
         const handler = builder
           .use<CaseMiddleware>(async({ context, next }) => {
             const previous = await next(context);
 
-            return `first:${previous}`;
+            return str(`first:${previous.value}`);
           })
           .use<CaseMiddleware>(async({ context, next }) => {
             const previous = await next(context);
 
-            return `second:${previous}`;
+            return str(`second:${previous.value}`);
           })
           .use<CaseMiddleware>(async({ context, next }) => {
             const previous = await next(context);
 
-            return `third:${previous}`;
+            return str(`third:${previous.value}`);
           })
           .handle(async() => {
-            return 'assert:response';
+            return str('assert:response');
           });
 
         const response = await handler();

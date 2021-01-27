@@ -2,6 +2,7 @@ import * as AwsLambda from 'aws-lambda';
 import { PilgrimContext } from '../../application/context';
 import { PilgrimHandler } from '../../application/handler';
 import { PilgrimMiddleware } from '../../application/middleware';
+import { PilgrimResponse } from '../../application/response';
 import { LambdaEventSource } from './lambda/sources';
 
 /**
@@ -75,6 +76,13 @@ export namespace Lambda {
       id: string;
     };
   };
+
+  export type Response<Event> = PilgrimResponse.Response<'aws:event', Event>;
+
+  export namespace Response {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    export type Constraint = Response<any>;
+  }
 
   /**
    * An implementation of handler specialised for lambda.

@@ -41,7 +41,10 @@ export namespace PilgrimMiddleware {
      * A marked response that is required to be returned by all middleware.
      * This is returned from the next function and ensures all responses bubble down the chain.
      */
-    export type Response = PilgrimResponse.Response<PilgrimResponse.Response.Type.Inherit, Marking.ResponseMarking>;
+    export type Response = (
+      & PilgrimResponse.Preset.Inherit
+      & Marking.ResponseMarking
+    );
 
     /**
      * Marking types that make inherit values unique and unconstrustable.

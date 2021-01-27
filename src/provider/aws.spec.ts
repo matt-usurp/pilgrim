@@ -1,14 +1,23 @@
 import * as AwsLambda from 'aws-lambda';
-import { aws, Lambda } from './aws';
+import { Pilgrim } from '../main';
+import { aws, response, Lambda } from './aws';
 
 declare module './aws/lambda/sources' {
   interface LambdaEventSource {
-    readonly 'test:event': EventSource<string, string>;
+    readonly 'test:event': EventSource<string, Lambda.Response<string>>;
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type TestMiddleware = Lambda.Middleware<Lambda.Source<'test:event'>, any, any, string, string>;
+type TestSource = Lambda.Source<'test:event'>;
+type TestMiddleware = (
+  Lambda.Middleware<
+    TestSource,
+    Pilgrim.Inherit,
+    Pilgrim.Inherit,
+    Lambda.Response<string>,
+    Lambda.Response<string>
+  >
+);
 
 /**
  * Callback should never be used.
@@ -32,16 +41,16 @@ describe('src/provider/aws.ts', (): void => {
     it('no middleware, handler has access to basic context provided', async() => {
       const handler = aws<'test:event'>()
         .handle(async({ context }) => {
-          return `assert:response(${context.request.id})`;
+          return response(`assert:response(${context.request.id})`);
         });
 
-      const response = await handler(
+      const awaited = await handler(
         'lambda-event-here',
         context as unknown as AwsLambda.Context,
         callback,
       );
 
-      expect(response).toBe('assert:response(test-request-id)');
+      expect(awaited).toBe('assert:response(test-request-id)');
     });
 
     it('with middleware, middleware has access to source', async() => {
@@ -49,19 +58,23 @@ describe('src/provider/aws.ts', (): void => {
         .use<TestMiddleware>(async({ source, context, next }) => {
           const previous = await next(context);
 
-          return `middleware(${previous}):${source.event}:${source.context.functionName}`;
+          if (previous.type === 'aws:event') {
+            return response(`middleware(${previous.value}):${source.event}:${source.context.functionName}`);
+          }
+
+          return previous;
         })
         .handle(async({ context }) => {
-          return `assert:response(${context.request.id})`;
+          return response(`assert:response(${context.request.id})`);
         });
 
-        const response = await handler(
+        const awaited = await handler(
           'lambda-event-here',
           context as unknown as AwsLambda.Context,
           callback,
         );
 
-      expect(response).toBe('middleware(assert:response(test-request-id)):lambda-event-here:test-function');
+      expect(awaited).toBe('middleware(assert:response(test-request-id)):lambda-event-here:test-function');
     });
   });
 });

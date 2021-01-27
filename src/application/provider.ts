@@ -1,5 +1,6 @@
 import { PilgrimContext } from './context';
 import { PilgrimHandler } from './handler';
+import { PilgrimResponse } from './response';
 
 /**
  * Pilgrim provider types.
@@ -40,7 +41,7 @@ export namespace PilgrimProvider {
   export type CompositionFunction<
     Source,
     InvokerContext extends PilgrimContext.Context.Constraint,
-    InvokerResponse,
+    InvokerResponse extends PilgrimResponse.Response.Constraint,
     ProviderFunction extends FunctionConstraint,
   > = (invoker: InvocationFunction<Source, InvokerContext, InvokerResponse>) => ProviderFunction;
 

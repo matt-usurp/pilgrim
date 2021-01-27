@@ -4,6 +4,7 @@ import { PilgrimContext } from '../context';
 import { PilgrimHandler } from '../handler';
 import { PilgrimMiddleware } from '../middleware';
 import { PilgrimProvider } from '../provider';
+import { PilgrimResponse } from '../response';
 
 /**
  * A function that can be passed around that represents a next function.
@@ -28,9 +29,8 @@ type PassThroughNextFunction = (
 export class HandlerBuilder<
   BuilderSource,
   BuilderProviderComposerFunction extends PilgrimProvider.CompositionFunction.Constraint<BuilderSource>,
-  BuilderResponseConstraint,
   BuilderContext extends PilgrimContext.Context.Constraint,
-  BuilderResponse extends BuilderResponseConstraint
+  BuilderResponse extends PilgrimResponse.Response.Constraint
 > {
   private readonly composer: BuilderProviderComposerFunction;
   private readonly middlewares: PilgrimMiddleware.Middleware.Constraint[] = [];
@@ -61,7 +61,6 @@ export class HandlerBuilder<
     HandlerBuilder<
       BuilderSource,
       BuilderProviderComposerFunction,
-      BuilderResponseConstraint,
       (
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         M extends PilgrimMiddleware.Middleware<BuilderSource, any, infer InferContextOutbound, any, any>
@@ -154,10 +153,10 @@ export class HandlerBuilder<
   ): PassThroughNextFunction {
     return this.middlewares.reduceRight<PassThroughNextFunction>((previous, middleware) => {
       return async(context) => {
-        const next: PassThroughNextFunction = async(newcontext) => {
-          const merged = deepmerge(context, newcontext);
+        const next: PassThroughNextFunction = async(givenContext) => {
+          const mergedContext = deepmerge(context, givenContext);
 
-          return previous(merged);
+          return previous(mergedContext);
         };
 
         return middleware({

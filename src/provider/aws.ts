@@ -1,13 +1,18 @@
 import { HandlerBuilder } from '../application/handler/builder';
 import { PilgrimProvider } from '../application/provider';
+import { PilgrimResponse } from '../application/response';
 import { Lambda, LambdaHandler } from './aws/lambda';
-import { LambdaEventSource } from './aws/lambda/sources';
+import { create, never } from './../response';
 
 // Re-export the lambda namespace.
 // Providing a slightly better DUX for importing.
 export { Lambda };
 
-type LambdaProviderCompositionFunction<HandlerEvent, HandlerResponse, InvokerResponse> = (
+type LambdaProviderCompositionFunction<
+  HandlerEvent,
+  HandlerResponse,
+  InvokerResponse extends PilgrimResponse.Response.Constraint
+> = (
   PilgrimProvider.CompositionFunction<
     Lambda.Source.Constraint,
     Lambda.Context,
@@ -23,16 +28,14 @@ type ComposerFunction = LambdaProviderCompositionFunction<
   // Generic composer needs greedy response to not cause type errors.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   any,
-  // Generic composer needs greedy invoker response to not cause type errors.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  any
+  Lambda.Response.Constraint | PilgrimResponse.Preset.Nothing
 >;
 
 /**
  * Default aws provider composition function for lambda.
  */
 const composer: ComposerFunction = (executor) => async(event, context) => {
-  return executor({
+  const value = await executor({
     source: {
       event,
       context,
@@ -44,6 +47,16 @@ const composer: ComposerFunction = (executor) => async(event, context) => {
       },
     },
   });
+
+  if (value.type === 'nothing') {
+    return;
+  }
+
+  if (value.type === 'aws:event') {
+    return value.value;
+  }
+
+  never(value);
 };
 
 /**
@@ -53,20 +66,24 @@ const composer: ComposerFunction = (executor) => async(event, context) => {
  * The final call should be the handle function which will wrap up the pipeline.
  * The response from the handle function should be exported and used as the function pointer in the lambda configuration.
  */
-export function aws<K extends keyof LambdaEventSource>(): (
+export function aws<K extends keyof Lambda.Event.Supported>(): (
   HandlerBuilder<
     Lambda.Source<K>,
     LambdaProviderCompositionFunction<
       Lambda.Event.GetEvent<K>,
-      Lambda.Event.GetResponse<K>,
+      Lambda.Event.GetResponse<K>['value'],
       Lambda.Event.GetResponse<K>
     >,
-    // Response constraint cannot be enforced right now as we do not enforce a common response type.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    any,
     Lambda.Context,
     Lambda.Event.GetResponse<K>
   >
 ) {
   return new HandlerBuilder(composer);
+}
+
+/**
+ * Create an aws event response.
+ */
+export function response<R extends Lambda.Response.Constraint>(value: R['value']): R {
+  return create<R>('aws:event', value);
 }
