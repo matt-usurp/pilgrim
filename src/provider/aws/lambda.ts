@@ -18,17 +18,29 @@ export namespace Lambda {
   /**
    * Helper type to retreive lambda events from the given identifier.
    */
-  export type Event<Identifier extends keyof LambdaEventSource> = LambdaEventSource[Identifier];
+  export type Event<Identifier extends keyof Event.Supported> = Event.Supported[Identifier];
 
   export namespace Event {
-    export type GetEvent<Identifier extends keyof LambdaEventSource> = Event<Identifier>['Event'];
-    export type GetResponse<Identifier extends keyof LambdaEventSource> = Event<Identifier>['Response'];
+    export type GetEvent<Identifier extends keyof Supported> = Event<Identifier>['Event'];
+    export type GetResponse<Identifier extends keyof Supported> = Event<Identifier>['Response'];
+
+    /**
+     * Validated events that will be used across the library core.
+     */
+    export type Supported = Pick<LambdaEventSource, {
+      [K in keyof LambdaEventSource]: (
+        // Check the response is valid.
+        LambdaEventSource[K]['Response'] extends PilgrimResponse.Response.Constraint
+          ? K // Return the key, as we pick with the values of this new mapping.
+          : never // Never is used as its removed from unions.
+      )
+    }[keyof LambdaEventSource]>;
   }
 
   /**
    * Helper type for creating lambda sources from the given identifier.
    */
-  export type Source<Identifier extends keyof LambdaEventSource> = Source.Definition<Event.GetEvent<Identifier>>;
+  export type Source<Identifier extends keyof Event.Supported> = Source.Definition<Event.GetEvent<Identifier>>;
 
   export namespace Source {
     /**
