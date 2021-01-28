@@ -1,6 +1,8 @@
 import { create } from '../../response';
 import { Lambda } from '../aws';
 
+export * from '../../response';
+
 /**
  * Create an aws event response.
  */
