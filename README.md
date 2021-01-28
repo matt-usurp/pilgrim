@@ -11,11 +11,11 @@ A complete type-safe implementation of middleware and handlers for serverless fu
 We use a builder kind of pattern to construct a middleware and handler chain.
 
 ```ts
-import { aws } from '@matt-usurp/pilgrim/provider/aws';
+import { aws, response } from '@matt-usurp/pilgrim/provider/aws';
 
 export const target = aws<'aws:apigw:proxy:v2'>()
   .handle(async ({ context }) => {
-    // ..
+    return response({ ... });
   });
 ```
 
@@ -62,12 +62,82 @@ This means you can perform tasks to resolve information (in this case user id) a
 This can be used within our original code sample by adding a `use()` call.
 
 ```ts
+import { response } from '@matt-usurp/pilgrim/provider/aws';
+
 export const target = aws<'aws:apigw:proxy:v2'>()
   .use(withUserData)
   .handle(async ({ context }) => {
     context.user.id; // what ever was resolved from middleware.
+
+    return response.event({ ... });
   });
 ```
+
+### Response
+
+All handlers are required to return a wrapped response.
+There are some generic helpers exported from main for crafting common responses or creating your own.
+
+```ts
+import { response } from '@matt-usurp/pilgrim';
+
+response.nothing();
+```
+
+When creating responses you will also want to craft a type for it.
+There is a response type helper exposed under `Pilgrim.Response`, this can then be provided via middleware to allow the application to transform it.
+
+```ts
+import { Pilgrim, response } from '@matt-usurp/pilgrim';
+
+type ColourResponse = Pilgrim.Response<'colours', { colours: string[]; }>;
+
+// Creating a straight up response.
+const response = response.create<ColourResponse>('colours', { colours: ['red', 'green', 'blue'] });
+response; // type MyResponse
+
+// Creating a factory function for constructing the response.
+const factory = response.factory<ColourResponse>('colours');
+const response = factory({ colours: ['orange'] });
+response; // type MyResponse
+```
+
+Note that the aws lambda `@matt-usurp/pilgrim/provider/aws` namespace also exports `response` which are tailored for aws responses.
+Currently all responses are wrapped in a `aws:event` response that can be created through `response.event()`.
+
+#### Middleware
+
+Middleware can introduce new responses by specifying them in the `ResponseInbound` generic parameter.
+It is important to note that when specifying a new response you must also supply a `ResponseOutput` as this is what transformation needs implementing.
+
+```ts
+import { Pilgrim, response } from '@matt-usurp/pilgrim';
+
+type MyMiddleware = Pilgrim.Middleware<SomeSource, any, any, ColourResponse, HttpResponse>;
+
+const middleware: MyMiddleware = async({ context, next }) => {
+  const result = await next(context);
+
+  // transform ColourResponse into HttpResponse.
+  if (result.type === 'colours') {
+    // some factory for HttpResponse response
+    return http({
+      status: 200,
+      body: JSON.stringify(result.value.colours);
+    });
+  }
+
+  // returns the pseudo "inherit" response.
+  return result;
+}
+```
+
+When this middleware is implemented all middleware and handlers in the chain can make use of `ColourResponse`.
+
+> There is an "inherit" response which should be considered a pseudo response.
+> You cannot test for "inherit" as it doesn't actually exist.
+> This might show up in middlewares representing "any" response you have not manually typed.
+> This allows middleware to be partially aware of responses.
 
 ### Further reading
 
