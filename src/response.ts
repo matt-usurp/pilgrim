@@ -1,7 +1,14 @@
 import { PilgrimResponse } from './application/response';
 
 /**
- * Construct a response of the given type.
+ * Create a factory for the given response type.
+ */
+export function factory<R extends PilgrimResponse.Response.Constraint>(type: R['type']): (value: R['value']) => R {
+  return (value) => create(type, value);
+}
+
+/**
+ * Construct a response of the given response type.
  */
 export function create<R extends PilgrimResponse.Response.Constraint>(
   type: R['type'],
