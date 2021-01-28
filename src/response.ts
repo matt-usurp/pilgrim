@@ -25,6 +25,13 @@ export function unwrap<R extends PilgrimResponse.Response.Constraint>(response: 
 }
 
 /**
+ * A http response.
+ */
+export function http<R extends PilgrimResponse.Preset.Http>(value: R['value']): R {
+  return create<R>('http', value);
+}
+
+/**
  * Construct a nothing resposne.
  */
 export function nothing(): PilgrimResponse.Preset.Nothing {
