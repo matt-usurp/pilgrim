@@ -84,6 +84,16 @@ export namespace Pilgrim {
       ContextOutbound extends PilgrimContext.Context.Constraint,
       ResponseInbound,
       ResponseOutbound,
-    > = PilgrimMiddleware.Middleware<never, ContextInbound, ContextOutbound, ResponseInbound, ResponseOutbound>;
+    > = (
+      PilgrimMiddleware.Middleware<
+        // Any usage so we don't care about source constraints.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        any,
+        ContextInbound,
+        ContextOutbound,
+        ResponseInbound,
+        ResponseOutbound
+      >
+    );
   }
 }
