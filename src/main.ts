@@ -18,6 +18,11 @@ export namespace Pilgrim {
    */
   export type Response<ResponseType extends string, Value> = PilgrimResponse.Response<ResponseType, Value>;
 
+  export namespace Response {
+    export type Nothing = PilgrimResponse.Preset.Nothing;
+    export type Http = PilgrimResponse.Preset.Http;
+  }
+
   /**
    * A handler function that takes the given context and returns a specified response.
    *
