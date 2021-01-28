@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.3.4](https://github.com/matt-usurp/pilgrim/compare/v0.3.3...v0.3.4) (2021-01-28)
+
+
+### Features
+
+* headers are optional, should be normalised in use cases ([9720fdf](https://github.com/matt-usurp/pilgrim/commit/9720fdfac4f6d8d90065a9ece1b6784ec603b4d2))
+* response factory for http ([996bc10](https://github.com/matt-usurp/pilgrim/commit/996bc1022b99504b48d5448fbc1a76fcfce97702))
+
 ### [0.3.3](https://github.com/matt-usurp/pilgrim/compare/v0.3.2...v0.3.3) (2021-01-28)
 
 

@@ -1,5 +1,5 @@
 {
-  "version": "0.3.3",
+  "version": "0.3.4",
   "name": "@matt-usurp/pilgrim",
   "description": "A complete type-safe implementation of middleware and handlers for serverless functions",
   "author": "Matthew Rose <matt.usurp@gmail.com>",
