@@ -41,7 +41,7 @@ describe('src/provider/aws.ts', (): void => {
     it('no middleware, handler has access to basic context provided', async() => {
       const handler = aws<'test:event'>()
         .handle(async({ context }) => {
-          return response(`assert:response(${context.request.id})`);
+          return response.event(`assert:response(${context.request.id})`);
         });
 
       const awaited = await handler(
@@ -59,13 +59,13 @@ describe('src/provider/aws.ts', (): void => {
           const previous = await next(context);
 
           if (previous.type === 'aws:event') {
-            return response(`middleware(${previous.value}):${source.event}:${source.context.functionName}`);
+            return response.event(`middleware(${previous.value}):${source.event}:${source.context.functionName}`);
           }
 
           return previous;
         })
         .handle(async({ context }) => {
-          return response(`assert:response(${context.request.id})`);
+          return response.event(`assert:response(${context.request.id})`);
         });
 
         const awaited = await handler(

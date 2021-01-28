@@ -2,7 +2,9 @@ import { HandlerBuilder } from '../application/handler/builder';
 import { PilgrimProvider } from '../application/provider';
 import { PilgrimResponse } from '../application/response';
 import { Lambda, LambdaHandler } from './aws/lambda';
-import { create, never } from './../response';
+import { never } from './../response';
+
+export * as response from './aws/response';
 
 // Re-export the lambda namespace.
 // Providing a slightly better DUX for importing.
@@ -79,11 +81,4 @@ export function aws<K extends keyof Lambda.Event.Supported>(): (
   >
 ) {
   return new HandlerBuilder(composer);
-}
-
-/**
- * Create an aws event response.
- */
-export function response<R extends Lambda.Response.Constraint>(value: R['value']): R {
-  return create<R>('aws:event', value);
 }
