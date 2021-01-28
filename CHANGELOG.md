@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.3.3](https://github.com/matt-usurp/pilgrim/compare/v0.3.2...v0.3.3) (2021-01-28)
+
+
+### Features
+
+* added response factory for creating response functions ([e259b0a](https://github.com/matt-usurp/pilgrim/commit/e259b0aeb9bcbdf26bd6eabb2242d38705231c28))
+* export responses from main file ([54cdbb4](https://github.com/matt-usurp/pilgrim/commit/54cdbb42edd0e46f875b41296a6cc8423dc06e9e))
+* response event for lambda moved to own function ([e900e6a](https://github.com/matt-usurp/pilgrim/commit/e900e6a3a24a7bc91cd2a3fe6e958664a2b0073e))
+* response type helper exposed on pilgrim namespace ([00864be](https://github.com/matt-usurp/pilgrim/commit/00864becc11a65aca35297b44cc8ef6c5a1a9f17))
+* updated how event sources are passed around ([8e8a4d9](https://github.com/matt-usurp/pilgrim/commit/8e8a4d93905c751897b2c596cf4f1aca023eecae))
+
+
+### Bug Fixes
+
+* readonly next function ([b173f4e](https://github.com/matt-usurp/pilgrim/commit/b173f4e8edfcf224f6c9cd64f929cb0291e3524b))
+
 ### [0.3.2](https://github.com/matt-usurp/pilgrim/compare/v0.3.1...v0.3.2) (2021-01-27)
 
 
