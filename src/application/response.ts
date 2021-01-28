@@ -16,7 +16,7 @@ export namespace PilgrimResponse {
     export type Http = Response<'http', {
       status: number;
       headers?: Record<string, string | number>;
-      body: string;
+      body?: string;
     }>;
   }
 }
