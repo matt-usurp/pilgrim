@@ -15,7 +15,7 @@ import { aws, response } from '@matt-usurp/pilgrim/provider/aws';
 
 export const target = aws<'aws:apigw:proxy:v2'>()
   .handle(async ({ context }) => {
-    return response({ ... });
+    return response.event({ ... });
   });
 ```
 
