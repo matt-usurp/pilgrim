@@ -115,7 +115,7 @@ export namespace PilgrimMiddleware {
     export type Tooling<Source, Context, NextFunction> = (
       & PilgrimHandler.Handler.Invoker.ToolingSourceAware<Source, Context>
       & {
-        next: NextFunction;
+        readonly next: NextFunction;
       }
     );
   }
