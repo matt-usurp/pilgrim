@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.3.5](https://github.com/matt-usurp/pilgrim/compare/v0.3.4...v0.3.5) (2021-01-28)
+
+
+### Features
+
+* http response body is not required ([f76d29d](https://github.com/matt-usurp/pilgrim/commit/f76d29d68d729f377cc5d44e6159bb199fa09859))
+* http support middleware for aws lambda ([7ca2237](https://github.com/matt-usurp/pilgrim/commit/7ca2237b5649b935436ad3ed32f8399b5e5e82f2))
+* merge base response with lambda response ([9b26c87](https://github.com/matt-usurp/pilgrim/commit/9b26c878aa0bce9e7891f1ab2c97dbe54aa6180b))
+
+
+### Bug Fixes
+
+* better handling of the "without source" middleware ([8babec1](https://github.com/matt-usurp/pilgrim/commit/8babec14968e94c0de781d1fa5be03fc5543a84f))
+
 ### [0.3.4](https://github.com/matt-usurp/pilgrim/compare/v0.3.3...v0.3.4) (2021-01-28)
 
 
