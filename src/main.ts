@@ -1,6 +1,7 @@
 import { PilgrimContext } from './application/context';
 import { PilgrimHandler } from './application/handler';
 import { PilgrimMiddleware } from './application/middleware';
+import { PilgrimResponse } from './application/response';
 
 export * as response from './response';
 
@@ -11,6 +12,11 @@ export namespace Pilgrim {
    * @see PilgrimMiddleware.Inherit
    */
   export type Inherit = PilgrimMiddleware.Inherit;
+
+  /**
+   * Create a custom response.
+   */
+  export type Response<ResponseType extends string, Value> = PilgrimResponse.Response<ResponseType, Value>;
 
   /**
    * A handler function that takes the given context and returns a specified response.
