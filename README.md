@@ -113,15 +113,22 @@ It is important to note that when specifying a new response you must also supply
 ```ts
 import { Pilgrim, response } from '@matt-usurp/pilgrim';
 
-type MyMiddleware = Pilgrim.Middleware<SomeSource, any, any, ColourResponse, HttpResponse>;
+type MyMiddleware = (
+  Pilgrim.Middleware<
+    'aws:some:event',
+    Pilgrim.Inherit,
+    Pilgrim.Inherit,
+    ColourResponse,
+    Pilgrim.Response.HttpResponse
+  >
+);
 
 const middleware: MyMiddleware = async({ context, next }) => {
   const result = await next(context);
 
   // transform ColourResponse into HttpResponse.
   if (result.type === 'colours') {
-    // some factory for HttpResponse response
-    return http({
+    return response.http({
       status: 200,
       body: JSON.stringify(result.value.colours);
     });
