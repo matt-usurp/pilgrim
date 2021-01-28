@@ -28,11 +28,11 @@ import { Pilgrim } from '@matt-usurp/pilgrim';
 import { Lambda } from '@matt-usurp/pilgrim/provider/aws';
 
 // Providing the middleware with knowledge of the kind of event source
-// This provides the `{ source: { event } }` typed as "APIGatewayProxyEventV2"
-type Source = Lambda.Source<'aws:apigw:proxy:v2'>;
+// This provides all places used with knowledge of the "APIGatewayProxyEventV2" event
+type LambdaEventSource = Lambda.Event<'aws:apigw:proxy:v2'>;
 
 type MyNewContext = { user: { id: string; }; };
-type MyMiddleware = Lambda.Middleware<Source, Pilgrim.Inherit, MyNewContext, Pilgrim.Inherit, Pilgrim.Inherit>;
+type MyMiddleware = Lambda.Middleware<LambdaEventSource, Pilgrim.Inherit, MyNewContext, Pilgrim.Inherit, Pilgrim.Inherit>;
 
 export const withUserData: MyMiddleware = async ({ event, next }) => {
   // Remember, "event" is APIGatewayProxyEventV2 here.

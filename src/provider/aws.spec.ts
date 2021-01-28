@@ -8,10 +8,11 @@ declare module './aws/lambda/sources' {
   }
 }
 
-type TestSource = Lambda.Source<'test:event'>;
+type TestEventSource = Lambda.Event<'test:event'>;
+
 type TestMiddleware = (
   Lambda.Middleware<
-    TestSource,
+    TestEventSource,
     Pilgrim.Inherit,
     Pilgrim.Inherit,
     Lambda.Response<string>,

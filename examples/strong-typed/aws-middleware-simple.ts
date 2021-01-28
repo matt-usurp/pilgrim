@@ -4,7 +4,7 @@ import { aws, Lambda } from '../../src/provider/aws';
 /**
  * Sources are used to provide specific type information to middleware functions.
  */
-type Source = Lambda.Source<'aws:apigw:proxy:v2'>;
+type LambdaEventSource = Lambda.Event<'aws:apigw:proxy:v2'>;
 
 /**
  * This represents our handler.
@@ -13,7 +13,7 @@ type Source = Lambda.Source<'aws:apigw:proxy:v2'>;
  * If we were to just try and consume this handler with `aws('..').handler(handler)` we would get an error.
  * The base context is `Lambda.Context` and we have no way to provide the required context information.
  */
-declare const handler: Lambda.Handler<{ user: string; }, Pilgrim.Inherit>;
+declare const handler: Lambda.Handler<LambdaEventSource, { user: string; }>;
 
 /**
  * Here we define a middleware.
@@ -24,7 +24,7 @@ declare const handler: Lambda.Handler<{ user: string; }, Pilgrim.Inherit>;
  */
 declare const middleware: (
   Lambda.Middleware<
-    Source,
+    LambdaEventSource,
     Pilgrim.Inherit, // Context expected inbound (from up chain)
     { user: string }, // Context provided by this middleware (outbound)
     Pilgrim.Inherit, // Response mutation parameters.

@@ -1,18 +1,21 @@
-import { aws, Lambda } from '../../src/provider/aws';
+import { aws, Lambda, response } from '../../src/provider/aws';
+
+type LambdaEventSource = Lambda.Event<'aws:apigw:proxy:v2'>;
 
 /**
- * Pseudo-code for defining a handler.
+ * Defining the handler type.
  *
  * The context here can be anything, however the base context given is always "Lambda.Context".
  * This means that anything additional in the context must be provided by middleware.
  * Note, TypeScript will show this error in the handler usage.
  */
-declare const handler: Lambda.Handler<
-  Lambda.Context,
-  Lambda.Event.GetResponse<'aws:apigw:proxy:v2'>
->;
+type MyHandler = Lambda.Handler<LambdaEventSource, Lambda.Context>;
 
-const target = aws<'aws:apigw:proxy:v2'>()
+const handler: MyHandler = async() => {
+  return response.event({});
+};
+
+const target = aws<LambdaEventSource>()
   .handle(handler);
 
 // The response is a function that lambda can trigger.

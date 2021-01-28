@@ -17,25 +17,27 @@ export type LambdaHandler<Event, Response> = AwsLambda.Handler<Event, Response>;
  */
 export namespace Lambda {
   /**
-   * Helper type to retreive lambda events from the given identifier.
+   * An event source identifier.
    */
-  export type Event<Identifier extends keyof Event.Supported> = Event.Supported[Identifier];
+  export type Event<Identifier extends keyof Event.Supported> = Identifier;
 
   export namespace Event {
-    export type GetEvent<Identifier extends keyof Supported> = Event<Identifier>['Event'];
-    export type GetResponse<Identifier extends keyof Supported> = Event<Identifier>['Response'];
+    export type GetEvent<Identifier extends keyof Supported> = Event.Supported[Identifier]['Event'];
+    export type GetResponse<Identifier extends keyof Supported> = Event.Supported[Identifier]['Response'];
 
     /**
      * Validated events that will be used across the library core.
      */
-    export type Supported = Pick<LambdaEventSource, {
-      [K in keyof LambdaEventSource]: (
-        // Check the response is valid.
-        LambdaEventSource[K]['Response'] extends PilgrimResponse.Response.Constraint
-          ? K // Return the key, as we pick with the values of this new mapping.
-          : never // Never is used as its removed from unions.
-      )
-    }[keyof LambdaEventSource]>;
+    export type Supported = (
+      Pick<LambdaEventSource, {
+        [K in keyof LambdaEventSource]: (
+          // Check the response is valid.
+          LambdaEventSource[K]['Response'] extends PilgrimResponse.Response.Constraint
+            ? K // Return the key, as we pick with the values of this new mapping.
+            : never // Never is used as its removed from unions.
+        )
+      }[keyof LambdaEventSource]>
+    );
   }
 
   /**
@@ -63,8 +65,8 @@ export namespace Lambda {
      * This is combined with the event so middleware has access to function meta data.
      */
     export type Definition<Event> = {
-      context: AwsLambda.Context;
-      event: Event;
+      readonly context: AwsLambda.Context;
+      readonly event: Event;
     };
   }
 
@@ -89,11 +91,18 @@ export namespace Lambda {
    *
    * The context will always include the "Lambda.Context" as its provided by the core functionality.
    * The handler however only needs to supply a partial context to allow for a better developer experience.
+   *
+   * @see Pilgrim.Handler
    */
   export type Handler<
+    SourceIdentifier extends keyof Event.Supported,
     Context extends PilgrimContext.Context.Constraint,
-    Response
-  > = PilgrimHandler.Handler<Context, Response>;
+  > = (
+    PilgrimHandler.Handler<
+      Context,
+      Event.GetResponse<SourceIdentifier>
+    >
+  );
 
   export namespace Handler {
     /**
@@ -118,12 +127,20 @@ export namespace Lambda {
    * @see PilgrimMiddleware.Middleware for more information
    */
   export type Middleware<
-    Source extends Lambda.Source.Constraint,
+    EventIdentity extends keyof Event.Supported,
     ContextInbound extends PilgrimContext.Context.Constraint,
     ContextOutbound extends PilgrimContext.Context.Constraint,
     ResponseInbound,
     ResponseOutbound,
-  > = PilgrimMiddleware.Middleware<Source, ContextInbound, ContextOutbound, ResponseInbound, ResponseOutbound>;
+  > = (
+    PilgrimMiddleware.Middleware<
+      Source<EventIdentity>,
+      ContextInbound,
+      ContextOutbound,
+      ResponseInbound,
+      ResponseOutbound
+    >
+  );
 
   export namespace Middleware {
     /**
@@ -134,6 +151,16 @@ export namespace Lambda {
       ContextOutbound extends PilgrimContext.Context.Constraint,
       ResponseInbound,
       ResponseOutbound,
-    > = Middleware<Source.Constraint, ContextInbound, ContextOutbound, ResponseInbound, ResponseOutbound>;
+    > = (
+      PilgrimMiddleware.Middleware<
+        // Any usage as this parameter shouldn't be used.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        any,
+        ContextInbound,
+        ContextOutbound,
+        ResponseInbound,
+        ResponseOutbound
+      >
+    );
   }
 }
