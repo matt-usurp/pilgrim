@@ -2,6 +2,8 @@ import { PilgrimContext } from './application/context';
 import { PilgrimHandler } from './application/handler';
 import { PilgrimMiddleware } from './application/middleware';
 
+export * as response from './response';
+
 export namespace Pilgrim {
   /**
    * A value that can be used in place where a value should be inherited.
