@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.3.6](https://github.com/matt-usurp/pilgrim/compare/v0.3.5...v0.3.6) (2021-01-29)
+
+
+### Features
+
+* alias deprecated function in handler builder ([0609b1b](https://github.com/matt-usurp/pilgrim/commit/0609b1ba95b05afa45da402a85563555f6efa581))
+* cleaned up lambda namespace also ([c92be3f](https://github.com/matt-usurp/pilgrim/commit/c92be3fe04411727dd06bf05ee5abedc7ad81fd2))
+* deprecations and moving to main namespace ([c50326a](https://github.com/matt-usurp/pilgrim/commit/c50326a0498c9919e4c1a6768a13ca9d1100def0))
+* removed usage of deprecated code from proof files ([a026058](https://github.com/matt-usurp/pilgrim/commit/a0260583bf47ee66f12c5d16936b0b38ce957140))
+
 ### [0.3.5](https://github.com/matt-usurp/pilgrim/compare/v0.3.4...v0.3.5) (2021-01-28)
 
 
