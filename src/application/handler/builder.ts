@@ -164,7 +164,7 @@ export class HandlerBuilder<
    * That might be processing some kind of raw event payload (e.g SNS, SES, SQS) where a middleware makes no sense.
    * This is the use-case for this kind of handler.
    */
-  public handleSourceAware<
+  public handleWithSource<
     H extends Pilgrim.Handler.WithSource<BuilderSource, EnsureContextInbound, EnsureContextOutbound>,
     EnsureContextInbound extends BuilderContext,
     EnsureContextOutbound extends BuilderResponse,
@@ -206,4 +206,9 @@ export class HandlerBuilder<
       };
     }, exector);
   }
+
+  /**
+   * @deprecated use handleWithSource() instead.
+   */
+  handleSourceAware = this.handleWithSource.bind(this);
 }
