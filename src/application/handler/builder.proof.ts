@@ -1,10 +1,9 @@
 import { Grok } from '../../language/grok';
-import { PilgrimMiddleware } from '../middleware';
-import { PilgrimResponse } from '../response';
+import { Pilgrim } from '../../main';
 import { HandlerBuilder } from './builder';
 
 type TestSource = { source: number; };
-type TestResponse = PilgrimResponse.Response<'test:default', { body: string; }>;
+type TestResponse = Pilgrim.Response<'test:default', { body: string; }>;
 type TestContext = {
   request: string;
   time: number;
@@ -20,12 +19,12 @@ const builder = new HandlerBuilder<TestSource, any, TestContext, TestResponse>({
  * Reason; Nothing is changing.
  */
 const withPassThrough: (
-  PilgrimMiddleware.Middleware<
+  Pilgrim.Middleware<
     TestSource,
-    PilgrimMiddleware.Inherit,
-    PilgrimMiddleware.Inherit,
-    PilgrimMiddleware.Inherit,
-    PilgrimMiddleware.Inherit
+    Pilgrim.Inherit,
+    Pilgrim.Inherit,
+    Pilgrim.Inherit,
+    Pilgrim.Inherit
   >
 ) = async({ context, next }) => {
   return next(context);
@@ -40,12 +39,12 @@ const u01 = builder.use(withPassThrough);
  * Reason; Nothing is changing.
  */
 const withKnownTestContext: (
-  PilgrimMiddleware.Middleware<
+  Pilgrim.Middleware<
     TestSource,
     TestContext,
-    PilgrimMiddleware.Inherit,
-    PilgrimMiddleware.Inherit,
-    PilgrimMiddleware.Inherit
+    Pilgrim.Inherit,
+    Pilgrim.Inherit,
+    Pilgrim.Inherit
   >
 ) = async({ context, next }) => {
   return next(context);
@@ -60,12 +59,12 @@ const u02 = u01.use(withKnownTestContext);
  * Reason; Nothing is changing.
  */
 const withKnownTestContextSubset: (
-  PilgrimMiddleware.Middleware<
+  Pilgrim.Middleware<
     TestSource,
     Pick<TestContext, 'time'>,
-    PilgrimMiddleware.Inherit,
-    PilgrimMiddleware.Inherit,
-    PilgrimMiddleware.Inherit
+    Pilgrim.Inherit,
+    Pilgrim.Inherit,
+    Pilgrim.Inherit
   >
 ) = async({ context, next }) => {
   return next(context);
@@ -78,12 +77,12 @@ const u03 = u02.use(withKnownTestContextSubset);
  * Usage should mean the builder has a merged context with the current known context.
  */
 const withNewContextRandom: (
-  PilgrimMiddleware.Middleware<
+  Pilgrim.Middleware<
     TestSource,
-    PilgrimMiddleware.Inherit,
+    Pilgrim.Inherit,
     { random: number; },
-    PilgrimMiddleware.Inherit,
-    PilgrimMiddleware.Inherit
+    Pilgrim.Inherit,
+    Pilgrim.Inherit
   >
 ) = async({ context, next }) => {
   return next({
@@ -102,12 +101,12 @@ const u05 = u04.use(withPassThrough);
  * The inbound context should be fine as it is a sub-set of the compiled context "so-far".
  */
 const withNewContextRandomAndActiveOutput: (
-  PilgrimMiddleware.Middleware<
+  Pilgrim.Middleware<
     TestSource,
     { random: number; },
     { active: boolean; },
-    PilgrimMiddleware.Inherit,
-    PilgrimMiddleware.Inherit
+    Pilgrim.Inherit,
+    Pilgrim.Inherit
   >
 ) = async({ context, next }) => {
   return next({
@@ -123,13 +122,13 @@ const u06 = u05.use(withNewContextRandomAndActiveOutput);
 /// --- Experimental
 /// ---
 
-type AnotherResponse = PilgrimResponse.Response<'test:another', { test: boolean; }>;
+type AnotherResponse = Pilgrim.Response<'test:another', { test: boolean; }>;
 
 const m6: (
-  PilgrimMiddleware.Middleware<
+  Pilgrim.Middleware<
     TestSource,
-    PilgrimMiddleware.Inherit,
-    PilgrimMiddleware.Inherit,
+    Pilgrim.Inherit,
+    Pilgrim.Inherit,
     AnotherResponse,
     TestResponse
   >
@@ -153,11 +152,11 @@ const m6: (
 const u07 = u06.use(m6);
 
 const m7: (
-  PilgrimMiddleware.Middleware<
+  Pilgrim.Middleware<
     TestSource,
-    PilgrimMiddleware.Inherit,
-    PilgrimMiddleware.Inherit,
-    PilgrimMiddleware.Inherit,
+    Pilgrim.Inherit,
+    Pilgrim.Inherit,
+    Pilgrim.Inherit,
     AnotherResponse
   >
 ) = async({ context, next }) => {
@@ -169,12 +168,12 @@ const m7: (
 const u08 = u07.use(m7);
 
 const m8: (
-  PilgrimMiddleware.Middleware<
+  Pilgrim.Middleware<
     TestSource,
-    PilgrimMiddleware.Inherit,
-    PilgrimMiddleware.Inherit,
+    Pilgrim.Inherit,
+    Pilgrim.Inherit,
     Grok.Union.Mutator.Without<TestResponse>,
-    PilgrimMiddleware.Inherit
+    Pilgrim.Inherit
   >
 ) = async({ context, next }) => {
   const response = await next(context);
