@@ -1,170 +1,126 @@
 import { Grok } from '../language/grok';
 import { Pilgrim } from '../main';
-import { PilgrimHandler } from './handler';
-import { PilgrimResponse } from './response';
+import { HandlerToolingWithSource } from './handler';
 
 /**
- * Pilgrim middleware types.
+ * A context marking that makes a context unique.
+ * This value is merged use to ensure that context is merged and provided where needed.
  *
- * These are used by the core library.
- * Aliases are provided through the main pilgrim namespace.
+ * If you are discovering this type due to an error, you need to merge context and provide it to next.
+ */
+export type MiddlewareContextMarking = {
+  /**
+   * @deprecated this value should not be used in your code!
+   */
+  readonly PilgrimMiddlewareInheritContextMarking: unique symbol;
+};
+
+/**
+ * An inherit value for context values.
  *
- * @see Pilgrim.Middleware for the public namespace.
+ * If you are discovering this type due to an error, you need to merge context and provide it to next.
+ */
+export type MiddlewareContextInherit = MiddlewareContextMarking;
+
+/**
+ * A response marking that makes a response unique.
+ * This value is used as part of the inherit response making sure its always returned.
+ *
+ * If you are discovering this type due to an error, you need to return the result from your next function.
+ * The proper way to do response mutations in middleware is to test out your expected response.
+ * Then return everything else in a default block so other middlewares can continue to operate on other responses.
+ */
+export type MiddlewareResponseMarking = {
+  /**
+   * @deprecated this value should not be used in your code!
+   */
+  readonly PilgrimMiddlewareInheritResponseMarking: unique symbol;
+};
+
+/**
+ * An inherit value for responses from the middleware next function.
+ *
+ * If you are discovering this type due to an error, you need to return the result from your next function.
+ * The proper way to do response mutations in middleware is to test out your expected response.
+ * Then return everything else in a default block so other middlewares can continue to operate on other responses.
+ */
+export type MiddlewareResponseInherit = (
+  & Pilgrim.Response<'middleware:inherit', never>
+  & MiddlewareResponseMarking
+);
+
+/**
+ * A generic pattern for middleware functions.
+ *
+ * This type is a little complex as certain values are replaced or merged with inherit values.
+ * This is to ensure that all context and responses are passed through the chain.
+ */
+export type MiddlewareFunction<
+  Source,
+  ContextInbound extends Pilgrim.Context.Constraint,
+  ContextOutbound extends Pilgrim.Context.Constraint,
+  ResponseInbound,
+  ResponseOutbound,
+> = (
+  (
+    tooling: (
+      MiddlewareTooling<
+        Source,
+        Grok.If<
+          Grok.Is.Any<ContextInbound>,
+          MiddlewareContextInherit,
+          MiddlewareContextInherit & ContextInbound
+        >,
+        MiddlewareNextFunction<
+          Grok.If<
+            Grok.Is.Any<ContextOutbound>,
+            MiddlewareContextInherit,
+            MiddlewareContextInherit & ContextOutbound
+          >,
+          Grok.If<
+            Grok.Is.Any<ResponseInbound>,
+            MiddlewareResponseInherit,
+            Grok.Mutator.Remove<MiddlewareResponseInherit | ResponseInbound>
+          >
+        >
+      >
+    )
+  ) => Promise<(
+    Grok.If<
+      Grok.Is.Any<ResponseOutbound>,
+      MiddlewareResponseInherit,
+      MiddlewareResponseInherit | ResponseOutbound
+    >
+  )>
+);
+
+/**
+ * A next function for moving up the chain.
+ */
+export type MiddlewareNextFunction<Context, Response> = (context: Context) => Promise<Response>;
+
+/**
+ * Middleware tooling given to a middleware function.
+ * These tools are intended to be access through parameter destructuring.
+ */
+export type MiddlewareTooling<Source, Context, NextFunction> = (
+  & HandlerToolingWithSource<Source, Context>
+  & {
+    readonly next: NextFunction;
+  }
+);
+
+/**
+ * @deprecated use Pilgrim.Middleware.
  */
 export namespace PilgrimMiddleware {
   /**
-   * A value that represents inherit.
-   *
-   * Although this value is essentially any it should not be abused.
-   * It is recommended to use this type instead of "any" directly as the implementation might change.
-   * Currently "any" is resolved to inherit values but at some point it might change to a marked symbol.
+   * @deprecated use Pilgrim.Inherit instead.
    */
-  export type Inherit = (
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    any
-  );
+  export type Inherit = Pilgrim.Inherit;
 
   /**
-   * Inherit types are provided to middleware for certain use cases.
-   *
-   * In most cases they are used to ensure the given data is passed down the chain.
-   * Forgetting the merge or pass an inherit type will cause a build failure.
+   * @deprecated use Pilgrim.Middleware instead.
    */
-  export namespace Inherit {
-    /**
-     * A marked context that is provided to all middleware.
-     * This ensure the context is merged as expected down to the handler.
-     */
-    export type Context = Marking.ContextMarking;
-
-    /**
-     * A marked response that is required to be returned by all middleware.
-     * This is returned from the next function and ensures all responses bubble down the chain.
-     */
-    export type Response = (
-      & PilgrimResponse.Preset.Inherit
-      & Marking.ResponseMarking
-    );
-
-    /**
-     * Marking types that make inherit values unique and unconstrustable.
-     */
-    export namespace Marking {
-      export type ContextMarking = { readonly PilgrimMiddlewareInheritContextMarking: unique symbol; };
-      export type ResponseMarking = { readonly PilgrimMiddlewareInheritResponseMarking: unique symbol; };
-    }
-  }
-
-  /**
-   * Invoker is the main function body representation of the middleware.
-   * The type is complex and ensure that data flows as expected.
-   */
-  export type Invoker<
-    Source,
-    ContextInbound extends Pilgrim.Context.Constraint,
-    ContextOutbound extends Pilgrim.Context.Constraint,
-    ResponseInbound,
-    ResponseOutbound,
-  > = (
-    (
-      tooling: (
-        Invoker.Tooling<
-          Source,
-          Grok.If<
-            Grok.Is.Any<ContextInbound>,
-            Inherit.Context,
-            Inherit.Context & ContextInbound
-          >,
-          Invoker.Next<
-            Grok.If<
-              Grok.Is.Any<ContextOutbound>,
-              Inherit.Context,
-              Inherit.Context & ContextOutbound
-            >,
-            Grok.If<
-              Grok.Is.Any<ResponseInbound>,
-              Inherit.Response,
-              Grok.Mutator.Remove<Inherit.Response | ResponseInbound>
-            >
-          >
-        >
-      )
-    ) => Promise<(
-      Grok.If<
-        Grok.Is.Any<ResponseOutbound>,
-        Inherit.Response,
-        Inherit.Response | ResponseOutbound
-      >
-    )>
-  );
-
-  export namespace Invoker {
-    /**
-     * The next function provided to middleware.
-     */
-    export type Next<Context, Response> = (context: Context) => Promise<Response>;
-
-    /**
-     * Tooling refers to the object given to middleware functions.
-     * This tooling is aware of context (so far) and the event source.
-     *
-     * Additionally middlewares have a next function that allows them to continue the execution chain.
-     *
-     * @see PilgrimMiddleware.Invoker.Next
-     */
-    export type Tooling<Source, Context, NextFunction> = (
-      & PilgrimHandler.Handler.Invoker.ToolingSourceAware<Source, Context>
-      & {
-        readonly next: NextFunction;
-      }
-    );
-  }
-
-  /**
-   * A middleware allows for the validation and passing down of context to the handler.
-   * Along with context middleware can also catch or mutate responses.
-   *
-   * @see Pilgrim.Middleware
-   */
-  export type Middleware<
-    Source,
-    ContextInbound extends Pilgrim.Context.Constraint,
-    ContextOutbound extends Pilgrim.Context.Constraint,
-    ResponseInbound,
-    ResponseOutbound,
-  > = (
-    & Invoker<Source, ContextInbound, ContextOutbound, ResponseInbound, ResponseOutbound>
-    & {
-      readonly Source?: Source;
-      readonly ContextInbound?: Grok.Data.Covariant<ContextInbound>;
-      readonly ContextOutbound?: Grok.Data.Covariant<ContextOutbound>;
-      readonly ResponseInbound?: ResponseInbound;
-      readonly ResponseOutbound?: ResponseOutbound;
-    }
-  );
-
-  export namespace Middleware {
-    /**
-     * A constraint for middleware types.
-     */
-    export type Constraint = (
-      Middleware<
-        // Any usage is allowed for constraints.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        any,
-        // Any usage is allowed for constraints.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        any,
-        // Any usage is allowed for constraints.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        any,
-        // Any usage is allowed for constraints.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        any,
-        // Any usage is allowed for constraints.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        any
-      >
-    );
-  }
+  export type Middleware<Source, ContextInbound extends Pilgrim.Context.Constraint, ContextOutbound extends Pilgrim.Context.Constraint, ResponseInbound, ResponseOutbound> = Pilgrim.Middleware<Source, ContextInbound, ContextOutbound, ResponseInbound, ResponseOutbound>;
 }

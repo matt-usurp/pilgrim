@@ -39,17 +39,6 @@ export function nothing(): PilgrimResponse.Preset.Nothing {
 }
 
 /**
- * Construct an inherit response.
- */
-export function inhert(): PilgrimResponse.Preset.Inherit {
-  throw new Error([
-    'Unexpected function call: inhert()',
-    'Inherit is a pseudo response and cannot be constructed.',
-    'Its only purpose is to represent possible responses that middlewares are not aware of.'
-  ].join(' '));
-}
-
-/**
  * An assert function that can validate responses are never.
  */
 export function never(response: never): void {

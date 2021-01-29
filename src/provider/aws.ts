@@ -1,21 +1,18 @@
 import { HandlerBuilder } from '../application/handler/builder';
-import { PilgrimProvider } from '../application/provider';
-import { PilgrimResponse } from '../application/response';
-import { Lambda, LambdaHandler } from './aws/lambda';
+import { ProviderCompositionFunction } from '../application/provider';
+import { Pilgrim } from '../main';
 import { never } from './../response';
+import { Lambda, LambdaHandler } from './aws/lambda';
 
 export * as response from './aws/response';
-
-// Re-export the lambda namespace.
-// Providing a slightly better DUX for importing.
 export { Lambda };
 
 type LambdaProviderCompositionFunction<
   HandlerEvent,
   HandlerResponse,
-  InvokerResponse extends PilgrimResponse.Response.Constraint
+  InvokerResponse extends Pilgrim.Response.Constraint
 > = (
-  PilgrimProvider.CompositionFunction<
+  ProviderCompositionFunction<
     Lambda.Source.Constraint,
     Lambda.Context,
     InvokerResponse,
@@ -30,7 +27,7 @@ type ComposerFunction = LambdaProviderCompositionFunction<
   // Generic composer needs greedy response to not cause type errors.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   any,
-  Lambda.Response.Constraint | PilgrimResponse.Preset.Nothing
+  Lambda.Response.Constraint | Pilgrim.Response.Nothing
 >;
 
 /**

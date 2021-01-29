@@ -1,20 +1,59 @@
 import deepmerge from 'deepmerge';
 import { Grok } from '../../language/grok';
 import { Pilgrim } from '../../main';
-import { PilgrimHandler } from '../handler';
-import { PilgrimMiddleware } from '../middleware';
-import { PilgrimProvider } from '../provider';
-import { PilgrimResponse } from '../response';
+import { MiddlewareNextFunction } from '../middleware';
+import { ProviderCompositionFunction } from '../provider';
 
 /**
  * A function that can be passed around that represents a next function.
  */
 type PassThroughNextFunction = (
-  PilgrimMiddleware.Invoker.Next<
+  MiddlewareNextFunction<
     // Any usage due to complex usage of this type
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     any,
     // Any usage due to complex usage of this type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    any
+  >
+);
+
+/**
+ * A constraint for provider composition function types.
+ */
+type ProviderFunctionConstraint<Source> = (
+  ProviderCompositionFunction<
+    Source,
+    // Any usage is allowed for constraints.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    any,
+    // Any usage is allowed for constraints.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    any,
+    // Any usage is allowed for constraints.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    any
+  >
+);
+
+/**
+ * A constraint for middleware types.
+ */
+type MiddlewareConstraint = (
+  Pilgrim.Middleware<
+    // Any usage is allowed for constraints.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    any,
+    // Any usage is allowed for constraints.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    any,
+    // Any usage is allowed for constraints.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    any,
+    // Any usage is allowed for constraints.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    any,
+    // Any usage is allowed for constraints.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     any
   >
@@ -28,12 +67,12 @@ type PassThroughNextFunction = (
  */
 export class HandlerBuilder<
   BuilderSource,
-  BuilderProviderComposerFunction extends PilgrimProvider.CompositionFunction.Constraint<BuilderSource>,
+  BuilderProviderComposerFunction extends ProviderFunctionConstraint<BuilderSource>,
   BuilderContext extends Pilgrim.Context.Constraint,
-  BuilderResponse extends PilgrimResponse.Response.Constraint
+  BuilderResponse extends Pilgrim.Response.Constraint
 > {
   private readonly composer: BuilderProviderComposerFunction;
-  private readonly middlewares: PilgrimMiddleware.Middleware.Constraint[] = [];
+  private readonly middlewares: MiddlewareConstraint[] = [];
 
   public constructor(composer: BuilderProviderComposerFunction) {
     this.composer = composer;
@@ -46,7 +85,7 @@ export class HandlerBuilder<
    * The next middleware can use any context that were provided as outputs of this middleware.
    */
   public use<
-    M extends PilgrimMiddleware.Middleware<
+    M extends Pilgrim.Middleware<
       BuilderSource,
       BuilderContext,
       // Any usage as other values mess up the infer usage.
@@ -63,13 +102,13 @@ export class HandlerBuilder<
       BuilderProviderComposerFunction,
       (
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        M extends PilgrimMiddleware.Middleware<BuilderSource, any, infer InferContextOutbound, any, any>
+        M extends Pilgrim.Middleware<BuilderSource, any, infer InferContextOutbound, any, any>
           ? Grok.Value.Merge<BuilderContext, InferContextOutbound>
           : never
       ),
       (
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        M extends PilgrimMiddleware.Middleware<BuilderSource, any, any, infer InferResponseInbound, any>
+        M extends Pilgrim.Middleware<BuilderSource, any, any, infer InferResponseInbound, any>
           ? (
             Grok.If<
               Grok.Is.Any<InferResponseInbound>,
@@ -97,7 +136,7 @@ export class HandlerBuilder<
    * Finalise the chain with the given handler.
    */
   public handle<
-    H extends PilgrimHandler.Handler<BuilderContext, BuilderResponse>,
+    H extends Pilgrim.Handler<BuilderContext, BuilderResponse>,
     // EnsureContextInbound extends BuilderContext,
     // EnsureContextOutbound extends BuilderResponse,
   >(handler: H): ReturnType<BuilderProviderComposerFunction> {
@@ -126,7 +165,7 @@ export class HandlerBuilder<
    * This is the use-case for this kind of handler.
    */
   public handleSourceAware<
-    H extends PilgrimHandler.Handler.SourceAware<BuilderSource, EnsureContextInbound, EnsureContextOutbound>,
+    H extends Pilgrim.Handler.WithSource<BuilderSource, EnsureContextInbound, EnsureContextOutbound>,
     EnsureContextInbound extends BuilderContext,
     EnsureContextOutbound extends BuilderResponse,
   >(handler: H): ReturnType<BuilderProviderComposerFunction> {

@@ -1,20 +1,27 @@
-import { PilgrimHandler } from './application/handler';
-import { PilgrimMiddleware } from './application/middleware';
-import { PilgrimResponse } from './application/response';
+import { HandlerFunction, HandlerTooling, HandlerToolingWithSource } from './application/handler';
+import { MiddlewareFunction } from './application/middleware';
+import { HttpResponseData } from './application/response';
+import { Grok } from './language/grok';
 
 export * as response from './response';
 
 export namespace Pilgrim {
   /**
-   * A value that can be used in place where a value should be inherited.
+   * A value that represents inherit.
    *
-   * @see PilgrimMiddleware.Inherit
+   * Although this value is essentially any at the moment it should not be abused.
+   * It is recommended to use this type instead of "any" directly as the implementation might change at a later date.
    */
-  export type Inherit = PilgrimMiddleware.Inherit;
+  export type Inherit = (
+    // Any used until inherit can be better considered in its use cases.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    any
+  );
 
   /**
    * Context refers to information that is being passed down to the handler.
-   * Middleware can mutate and provide context to handlers.
+   * By default this is governed by the provider implementation being used.
+   * Middleware can enhance the context by using the given event source.
    */
   export namespace Context {
     /**
@@ -26,51 +33,74 @@ export namespace Pilgrim {
   /**
    * Create a custom response.
    */
-  export type Response<ResponseType extends string, Value> = PilgrimResponse.Response<ResponseType, Value>;
+  export type Response<ResponseType extends string, Value> = {
+    readonly type: ResponseType;
+    readonly value: Value;
+  };
 
   export namespace Response {
-    export type Nothing = PilgrimResponse.Preset.Nothing;
-    export type Http = PilgrimResponse.Preset.Http;
+    /**
+     * A constraint for responses.
+     */
+    export type Constraint = Pilgrim.Response<string, unknown>;
+
+    /**
+     * A nothing response.
+     */
+    export type Nothing = Pilgrim.Response<'nothing', never>;
+
+    /**
+     * A http response.
+     */
+    export type Http = Pilgrim.Response<'http', HttpResponseData>;
   }
 
   /**
    * A handler function that takes the given context and returns a specified response.
    *
-   * Handlers are not made aware of the event source by default.
-   * Additional context can be provided by using middleware which does have access to the event source.
-   * If your use case needs direct access to the event source without middleware use the source aware handler.
+   * Handlers are provided with tooling that only have access to the context.
+   * Context is data provided by middleware that is gathered from context.
+   * A handler does not have access to an event source by default.
    *
-   * @see Pilgrim.Middleware for more information on middleware and context
-   * @see Pilgrim.Handler.SourceAware for an event source aware handler implementation
+   * In some use cases it would be long winded to build middleware where the handler needs direct access to the event source.
+   * For this case you can make use of the the `Pilgrim.Handler.WithSource` which can access the event source.
+   * Note, that this needs to be given to the `handleWithSource()` instead.
+   *
+   * @see Pilgrim.Middleware for more information on middleware.
+   * @see Pilgrim.Handler.WithSource for more information on event source aware handlers.
    */
   export type Handler<
     Context extends Pilgrim.Context.Constraint,
     Response
-  > = PilgrimHandler.Handler<Context, Response>;
+  > = HandlerFunction<HandlerTooling<Context>, Response>;
 
   export namespace Handler {
     /**
-     * A handler function that takes the given context and event source.
+     * An extended handler function with the event source supplied within its tooling.
      *
-     * This handler is not recommended but is provided for use cases where middleware can be considered over engineering.
-     *
-     * @see Pilgrim.Handler for the more recommended handler implementation
-     * @see Pilgrim.Middleware for more information on middleware and context
+     * @see Pilgrim.Handler for more information on handlers.
+     * @see Pilgrim.Middleware for more information on middleware.
      */
-    export type SourceAware<
+    export type WithSource<
       Source,
       Context extends Pilgrim.Context.Constraint,
       Response
-    > = PilgrimHandler.Handler.SourceAware<Source, Context, Response>;
+    > = HandlerFunction<HandlerToolingWithSource<Source, Context>, Response>;
+
+    /**
+     * @deprecated use Pilgrim.Handler.WithSource
+     */
+    export type SourceAware<Source, Context extends Pilgrim.Context.Constraint, Response> = WithSource<Source, Context, Response>;
   }
 
   /**
-   * A middleware that defines the mutation of context and resources.
-   * The middleware has access to the event source so it can provided it to the handler via context.
-   * This middleware is handy for cases where validation needs to happen on known event source details.
+   * A middleware function that takes the given event source and provided context for handlers.
    *
-   * @see PilgrimMiddleware.Middleware for more information on middleware
-   * @see PilgrimHandler.Handler for more information on handler
+   * Middleware are a way of extracting common tasks that operate on event sources.
+   * A good example is parsing http GET arguments and exposing them through context with sensible defaults.
+   * This removes lots of boiler plate from your handler and also makes your handler easier to test.
+   *
+   * @see Pilgrim.Handler.Handler for more information on handlers.
    */
   export type Middleware<
     Source,
@@ -78,16 +108,26 @@ export namespace Pilgrim {
     ContextOutbound extends Pilgrim.Context.Constraint,
     ResponseInbound,
     ResponseOutbound,
-  > = PilgrimMiddleware.Middleware<Source, ContextInbound, ContextOutbound, ResponseInbound, ResponseOutbound>;
+  > = (
+    & MiddlewareFunction<Source, ContextInbound, ContextOutbound, ResponseInbound, ResponseOutbound>
+    & {
+      readonly Source?: Source;
+      readonly ContextInbound?: Grok.Data.Covariant<ContextInbound>;
+      readonly ContextOutbound?: Grok.Data.Covariant<ContextOutbound>;
+      readonly ResponseInbound?: ResponseInbound;
+      readonly ResponseOutbound?: ResponseOutbound;
+    }
+  );
 
   export namespace Middleware {
     /**
-     * A middleware that defines the mutation of context and resources.
-     * This middleware doesn't have access to event source so context is frabicated through some process.
-     * This middleware is handy for cases where validation needs to happen on known context.
+     * A middleware function that doesn't have care about the event source.
      *
-     * @see PilgrimMiddleware.Middleware for more information on middleware
-   * @see PilgrimHandler.Handler for more information on handler
+     * This kind of middleware is commonly used when external services are used or a middleware uses existing context.
+     * In most cases this will not be the middleware you would want to use.
+     *
+     * @see Pilgrim.Middleware for more information on middlewares.
+     * @see Pilgrim.Handler.Handler for more information on handlers.
      */
     export type WithoutSource<
       ContextInbound extends Pilgrim.Context.Constraint,
@@ -95,7 +135,7 @@ export namespace Pilgrim {
       ResponseInbound,
       ResponseOutbound,
     > = (
-      PilgrimMiddleware.Middleware<
+      Pilgrim.Middleware<
         // Any usage so we don't care about source constraints.
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         any,

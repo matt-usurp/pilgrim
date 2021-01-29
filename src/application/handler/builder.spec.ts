@@ -1,9 +1,7 @@
-import { PilgrimHandler } from '../handler';
-import { PilgrimMiddleware } from '../middleware';
-import { PilgrimProvider } from '../provider';
-import { PilgrimResponse } from '../response';
-import { HandlerBuilder } from './builder';
+import { Pilgrim } from '../../main';
 import * as response from '../../response';
+import { ProviderCompositionFunction } from '../provider';
+import { HandlerBuilder } from './builder';
 
 type TestSource = { test: true; };
 type TestContext = { from: string; };
@@ -14,8 +12,8 @@ type TestHttpResponseData = {
   body: unknown;
 };
 
-type TestStringResponse = PilgrimResponse.Response<'test:string', string>;
-type TestHttpResponse = PilgrimResponse.Response<'test:http', TestHttpResponseData>;
+type TestStringResponse = Pilgrim.Response<'test:string', string>;
+type TestHttpResponse = Pilgrim.Response<'test:http', TestHttpResponseData>;
 
 const str = (value: string): TestStringResponse => {
   return response.create<TestStringResponse>('test:string', value);
@@ -26,10 +24,10 @@ const http = (value: TestHttpResponseData): TestHttpResponse => {
 };
 
 type TestProviderComposer<
-  ChainResponse extends PilgrimResponse.Response.Constraint,
+  ChainResponse extends Pilgrim.Response.Constraint,
   ProviderResponse
 > = (
-  PilgrimProvider.CompositionFunction<
+  ProviderCompositionFunction<
     TestSource,
     TestContext,
     ChainResponse,
@@ -41,7 +39,7 @@ type TestProviderComposer<
 type PassThroughTestProviderComposer = TestProviderComposer<any, any>;
 
 type TestHandlerBuilder<
-  Response extends PilgrimResponse.Response.Constraint,
+  Response extends Pilgrim.Response.Constraint,
   ProviderResponse
 > = (
   HandlerBuilder<
@@ -132,10 +130,10 @@ describe('src/application/handler/builder.ts', (): void => {
 
       it('given single middleware, middleware changes response from handler, new response given as execution response', async() => {
         type CaseMiddleware = (
-          PilgrimMiddleware.Middleware<
+          Pilgrim.Middleware<
             TestSource,
-            PilgrimMiddleware.Inherit,
-            PilgrimMiddleware.Inherit,
+            Pilgrim.Inherit,
+            Pilgrim.Inherit,
             TestStringResponse,
             TestStringResponse
           >
@@ -159,9 +157,9 @@ describe('src/application/handler/builder.ts', (): void => {
 
       it('given single middleware, middleware changes given context, handler receives new context', async() => {
         type CaseMiddleware = (
-          PilgrimMiddleware.Middleware<
+          Pilgrim.Middleware<
             TestSource,
-            PilgrimMiddleware.Inherit,
+            Pilgrim.Inherit,
             { theme: string },
             TestStringResponse,
             TestStringResponse
@@ -188,26 +186,26 @@ describe('src/application/handler/builder.ts', (): void => {
 
       it('given multiple middleware, each can change response of previous, given as execution response', async() => {
         type CaseMiddlewareOne = (
-          PilgrimMiddleware.Middleware<
+          Pilgrim.Middleware<
             TestSource,
-            PilgrimMiddleware.Inherit,
-            PilgrimMiddleware.Inherit,
+            Pilgrim.Inherit,
+            Pilgrim.Inherit,
             TestHttpResponse,
-            PilgrimResponse.Preset.Http
+            Pilgrim.Response.Http
           >
         );
 
         type CaseMiddlewareTwo = (
-          PilgrimMiddleware.Middleware<
+          Pilgrim.Middleware<
             TestSource,
-            PilgrimMiddleware.Inherit,
-            PilgrimMiddleware.Inherit,
+            Pilgrim.Inherit,
+            Pilgrim.Inherit,
             TestHttpResponse,
             TestHttpResponse
           >
         );
 
-        const builder: TestHandlerBuilder<PilgrimResponse.Preset.Http, PilgrimResponse.Preset.Http> = new HandlerBuilder(passThroughWrapper);
+        const builder: TestHandlerBuilder<Pilgrim.Response.Http, Pilgrim.Response.Http> = new HandlerBuilder(passThroughWrapper);
         const handler = builder
           .use<CaseMiddlewareOne>(async({ context, next }) => {
             const previous = await next(context);
@@ -243,7 +241,7 @@ describe('src/application/handler/builder.ts', (): void => {
 
             return previous;
           })
-          .handle<PilgrimHandler.Handler<PilgrimMiddleware.Inherit, TestHttpResponse>>(async() => {
+          .handle<Pilgrim.Handler<Pilgrim.Inherit, TestHttpResponse>>(async() => {
             return http({
               status: 200,
               headers: {},
@@ -271,12 +269,12 @@ describe('src/application/handler/builder.ts', (): void => {
         };
 
         type CaseMiddleware = (
-          PilgrimMiddleware.Middleware<
+          Pilgrim.Middleware<
             TestSource,
-            PilgrimMiddleware.Inherit,
+            Pilgrim.Inherit,
             ExtraMiddlewareContext,
-            PilgrimMiddleware.Inherit,
-            PilgrimMiddleware.Inherit
+            Pilgrim.Inherit,
+            Pilgrim.Inherit
           >
         );
 
@@ -320,12 +318,12 @@ describe('src/application/handler/builder.ts', (): void => {
       it('given multiple middleware, altering contexts are deep merged, handler given deep merged context', async() => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         type CaseMiddleware = (
-          PilgrimMiddleware.Middleware<
+          Pilgrim.Middleware<
             TestSource,
-            PilgrimMiddleware.Inherit,
+            Pilgrim.Inherit,
             { some: unknown },
-            PilgrimMiddleware.Inherit,
-            PilgrimMiddleware.Inherit
+            Pilgrim.Inherit,
+            Pilgrim.Inherit
           >
         );
 
@@ -392,10 +390,10 @@ describe('src/application/handler/builder.ts', (): void => {
 
       it('given several middleware, execution order is as expected', async() => {
         type CaseMiddleware = (
-          PilgrimMiddleware.Middleware<
+          Pilgrim.Middleware<
             TestSource,
-            PilgrimMiddleware.Inherit,
-            PilgrimMiddleware.Inherit,
+            Pilgrim.Inherit,
+            Pilgrim.Inherit,
             TestStringResponse,
             TestStringResponse
           >

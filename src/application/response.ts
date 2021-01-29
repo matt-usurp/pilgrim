@@ -1,22 +1,42 @@
-export namespace PilgrimResponse {
-  export type Response<ResponseType extends string, Value> = {
-    type: ResponseType;
-    value: Value;
-  };
+import { Pilgrim } from '../main';
 
+export type HttpResponseData = {
+  status: number;
+  headers?: Record<string, string | number>;
+  body?: string;
+};
+
+/**
+ * @deprecated use Pilgrim.Response instead.
+ */
+export namespace PilgrimResponse {
+  /**
+   * @deprecated use Pilgrim.Response instead.
+   */
+  export type Response<ResponseType extends string, Value> = Pilgrim.Response<ResponseType, Value>;
+
+  /**
+   * @deprecated use Pilgrim.Response instead.
+   */
   export namespace Response {
-    export type ResponseMarking = { readonly PilgrimResponseMarking: unique symbol };
-    export type Constraint = Response<string, unknown>;
+    /**
+     * @deprecated use Pilgrim.Response.Constraint instead.
+     */
+    export type Constraint = Pilgrim.Response.Constraint;
   }
 
+  /**
+   * @deprecated use Pilgrim.Response instead.
+   */
   export namespace Preset {
-    export type Inherit = Response<'inherit', never>;
-    export type Nothing = Response<'nothing', never>;
+    /**
+     * @deprecated use Pilgrim.Response.Nothing instead.
+     */
+    export type Nothing = Pilgrim.Response.Nothing;
 
-    export type Http = Response<'http', {
-      status: number;
-      headers?: Record<string, string | number>;
-      body?: string;
-    }>;
+    /**
+     * @deprecated use Pilgrim.Response.Http instead.
+     */
+    export type Http = Pilgrim.Response.Http;
   }
 }

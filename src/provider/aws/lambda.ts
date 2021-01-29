@@ -1,7 +1,4 @@
 import * as AwsLambda from 'aws-lambda';
-import { PilgrimHandler } from '../../application/handler';
-import { PilgrimMiddleware } from '../../application/middleware';
-import { PilgrimResponse } from '../../application/response';
 import { Pilgrim } from '../../main';
 import { LambdaEventSource } from './lambda/sources';
 
@@ -32,7 +29,7 @@ export namespace Lambda {
       Pick<LambdaEventSource, {
         [K in keyof LambdaEventSource]: (
           // Check the response is valid.
-          LambdaEventSource[K]['Response'] extends PilgrimResponse.Response.Constraint
+          LambdaEventSource[K]['Response'] extends Pilgrim.Response.Constraint
             ? K // Return the key, as we pick with the values of this new mapping.
             : never // Never is used as its removed from unions.
         )
@@ -79,7 +76,7 @@ export namespace Lambda {
     };
   };
 
-  export type Response<Event> = PilgrimResponse.Response<'aws:event', Event>;
+  export type Response<Event> = Pilgrim.Response<'aws:event', Event>;
 
   export namespace Response {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -98,7 +95,7 @@ export namespace Lambda {
     SourceIdentifier extends keyof Event.Supported,
     Context extends Pilgrim.Context.Constraint,
   > = (
-    PilgrimHandler.Handler<
+    Pilgrim.Handler<
       Context,
       Event.GetResponse<SourceIdentifier>
     >
@@ -115,7 +112,7 @@ export namespace Lambda {
       Source extends Source.Constraint,
       Context extends Pilgrim.Context.Constraint,
       Response
-    > = PilgrimHandler.Handler.SourceAware<Source, Context, Response>;
+    > = Pilgrim.Handler.WithSource<Source, Context, Response>;
   }
 
   /**
@@ -124,7 +121,7 @@ export namespace Lambda {
    * The context will always include the "Lambda.Context" as its provided by the core functionality.
    * The handler however only needs to supply a partial context to allow for a better developer experience.
    *
-   * @see PilgrimMiddleware.Middleware for more information
+   * @see Pilgrim.Middleware for more information
    */
   export type Middleware<
     EventIdentity extends keyof Event.Supported,
@@ -133,7 +130,7 @@ export namespace Lambda {
     ResponseInbound,
     ResponseOutbound,
   > = (
-    PilgrimMiddleware.Middleware<
+    Pilgrim.Middleware<
       Source<EventIdentity>,
       ContextInbound,
       ContextOutbound,
@@ -152,7 +149,7 @@ export namespace Lambda {
       ResponseInbound,
       ResponseOutbound,
     > = (
-      PilgrimMiddleware.Middleware<
+      Pilgrim.Middleware<
         // Any usage as this parameter shouldn't be used.
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         any,

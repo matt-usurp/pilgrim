@@ -1,6 +1,6 @@
 import * as AwsLambda from 'aws-lambda';
 import { Pilgrim } from '../main';
-import { aws, response, Lambda } from './aws';
+import { aws, Lambda, response } from './aws';
 
 declare module './aws/lambda/sources' {
   interface LambdaEventSource {

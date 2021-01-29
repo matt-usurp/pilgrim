@@ -1,15 +1,20 @@
 import { Pilgrim } from '../main';
 
 /**
- * @deprecated use Pilgrim.Context.Constraint
+ * A constraint for contexts.
+ */
+export type ContextConstraint = Record<string, unknown>;
+
+/**
+ * @deprecated use ContextConstraint
  */
 export namespace PilgrimContext {
   /**
-   * @deprecated use Pilgrim.Context.Constraint
+   * @deprecated use ContextConstraint
    */
   export namespace Context {
     /**
-     * @deprecated use Pilgrim.Context.Constraint
+     * @deprecated use ContextConstraint
      */
     export type Constraint = Pilgrim.Context.Constraint;
   }
