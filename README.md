@@ -167,12 +167,13 @@ This is enforced through types and will cause build failures if the middleware i
 > Simply return this response in a default block.
 > This allows middleware to be partially aware of responses.
 
-### Further reading
+## Further reading
 
 * For more examples see the `/examples` directory.
 * For supported events (such as `aws:apigw:proxy:v2`) see the `/src/provider/aws/lambda/source` directory. Note that this is an extensible interface so if you event is missing you can add it yourself by doing the same thing. However, do feel free to PR that back in to the project!
 
-## Future
+## Future Features
 
-* Make agnostic to provider, allowing support for Azure and GCP.
-* Improve test cases to cover scenarios.
+* Introduce examples for other providers such as `azure` and `gcp`.
+* Flesh out test cases to ensure all execution branches are covered.
+* Breakout documentation in to less overwhelming wall of text.
