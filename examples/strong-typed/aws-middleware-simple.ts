@@ -19,7 +19,7 @@ declare const handler: Lambda.Handler<LambdaEventSource, { user: string; }>;
  * Here we define a middleware.
  *
  * It takes the same inbound as we need access to the event information.
- * However it is possible to use an "WithoutSource" variation if you are frabricating context.
+ * However it is possible to use an "WithoutSource" variation if you are fabricating context.
  * We define that it returns some additional context that when used should satisfy our handler.
  */
 declare const middleware: (

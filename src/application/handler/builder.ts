@@ -81,7 +81,7 @@ export class HandlerBuilder<
   /**
    * Add the given middleware to the chain.
    *
-   * Context and response types are infered and affect the running values.
+   * Context and response types are  resolved and affect the running values.
    * The next middleware can use any context that were provided as outputs of this middleware.
    */
   public use<
@@ -126,7 +126,7 @@ export class HandlerBuilder<
   ) {
     this.middlewares.push(middleware);
 
-    // Conceptually we know what this should be, some types cannot be infered right now.
+    // Conceptually we know what this should be, some types cannot be resolved right now.
     // Therefore the casting to any is used, these cases should be covered by tests.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return this as any;
@@ -141,13 +141,13 @@ export class HandlerBuilder<
     // EnsureContextOutbound extends BuilderResponse,
   >(handler: H): ReturnType<BuilderProviderComposerFunction> {
     return this.composer(async({ source, context }) => {
-      const exector: PassThroughNextFunction = async(context) => {
+      const executor: PassThroughNextFunction = async(context) => {
         return handler({
           context,
         });
       };
 
-      const composed = this.build(source, exector);
+      const composed = this.build(source, executor);
 
       return composed(context);
     });
@@ -170,14 +170,14 @@ export class HandlerBuilder<
     EnsureContextOutbound extends BuilderResponse,
   >(handler: H): ReturnType<BuilderProviderComposerFunction> {
     return this.composer(async({ source, context }) => {
-      const exector: PassThroughNextFunction = async(context) => {
+      const executor: PassThroughNextFunction = async(context) => {
         return handler({
           source,
           context,
         });
       };
 
-      const composed = this.build(source, exector);
+      const composed = this.build(source, executor);
 
       return composed(context);
     });
@@ -188,7 +188,7 @@ export class HandlerBuilder<
    */
   private build(
     source: BuilderSource,
-    exector: PassThroughNextFunction,
+    executor: PassThroughNextFunction,
   ): PassThroughNextFunction {
     return this.middlewares.reduceRight<PassThroughNextFunction>((previous, middleware) => {
       return async(context) => {
@@ -204,7 +204,7 @@ export class HandlerBuilder<
           next,
         });
       };
-    }, exector);
+    }, executor);
   }
 
   /**

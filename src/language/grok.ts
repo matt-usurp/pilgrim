@@ -129,7 +129,7 @@ export namespace Grok {
     );
 
     /**
-     * Union based mutators
+     * Union based mutations
      */
     export namespace Mutator {
       /**

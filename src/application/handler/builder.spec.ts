@@ -263,7 +263,7 @@ describe('src/application/handler/builder.ts', (): void => {
         });
       });
 
-      it('given two middleware, altering contexts are merged for handler, handler recieves merged context', async() => {
+      it('given two middleware, altering contexts are merged for handler, handler receives merged context', async() => {
         type ExtraMiddlewareContext = {
           headers: Record<string, string | number>
         };
