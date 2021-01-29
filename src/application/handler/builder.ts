@@ -158,7 +158,7 @@ export class HandlerBuilder<
    * This handler is made aware of the event source.
    *
    * This is not the recommended kind of handler to use for general use.
-   * Preferrably you have a combination of middleware and a context to provide.
+   * Preferably you have a combination of middleware and a context to provide.
    *
    * However sometimes some handlers just need to know the event source straight up.
    * That might be processing some kind of raw event payload (e.g SNS, SES, SQS) where a middleware makes no sense.

@@ -87,7 +87,7 @@ export namespace Grok {
     export type MutatorKind = { readonly GrokMutatorKind: unique symbol; };
 
     /**
-     * Remove any mutators from the given value.
+     * Remove any mutations from the given value.
      */
     export type Remove<Value> = Exclude<Value, MutatorKind>;
   }
