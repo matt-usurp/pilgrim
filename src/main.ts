@@ -14,6 +14,17 @@ export namespace Pilgrim {
   export type Inherit = PilgrimMiddleware.Inherit;
 
   /**
+   * Context refers to information that is being passed down to the handler.
+   * Middleware can mutate and provide context to handlers.
+   */
+  export namespace Context {
+    /**
+     * A constraint for contexts.
+     */
+    export type Constraint = Record<string, unknown>;
+  }
+
+  /**
    * Create a custom response.
    */
   export type Response<ResponseType extends string, Value> = PilgrimResponse.Response<ResponseType, Value>;

@@ -1,18 +1,16 @@
+import { Pilgrim } from '../main';
+
 /**
- * Pilgrim context types.
- *
- * These are used by the core library.
- * This namespace has no public alias.
+ * @deprecated use Pilgrim.Context.Constraint
  */
 export namespace PilgrimContext {
   /**
-   * Context refers to information that is being passed down to the handler.
-   * Middleware can mutate and provide context to handlers.
+   * @deprecated use Pilgrim.Context.Constraint
    */
   export namespace Context {
     /**
-     * A constraint for contexts.
+     * @deprecated use Pilgrim.Context.Constraint
      */
-    export type Constraint = Record<string, unknown>;
+    export type Constraint = Pilgrim.Context.Constraint;
   }
 }
