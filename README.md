@@ -60,7 +60,7 @@ export const withUserData: MyMiddleware = async ({ event, next }) => {
 }
 ```
 
-All middleware are asyncronous which allows them to delay the execution and wait for a process.
+All middleware are asynchronous which allows them to delay the execution and wait for a process.
 This means you can perform tasks to resolve information and provide that to the next context.
 In the example above, `validateUserId()` could communicate with the database to make sure the user id exists.
 
@@ -143,8 +143,8 @@ type ColourResponseMiddleware = (
 const middleware: ColourResponseMiddleware = async({ context, next }) => {
   const result = await next(context);
 
-  // using the discrimnator "type" to detect our colour response.
-  // TS should do all the type inferance for you here, and resolve to ColourResponse.
+  // using the discriminator "type" to detect our colour response.
+  // TS should resolve result to ColourResponse.
   if (result.type === 'colours') {
     return response.http({
       status: 200,
@@ -163,7 +163,7 @@ This is enforced through types and will cause build failures if the middleware i
 
 > There is an "inherit" response which should be considered a pseudo response.
 > You cannot test for "inherit" as it doesn't actually exist.
-> This might show up in middlewares representing "any" response you have not manually typed.
+> This might show up in middleware's representing "any" response you have not manually typed.
 > Simply return this response in a default block.
 > This allows middleware to be partially aware of responses.
 
