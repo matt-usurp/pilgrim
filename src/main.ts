@@ -127,7 +127,7 @@ export namespace Pilgrim {
      * In most cases this will not be the middleware you would want to use.
      *
      * @see Pilgrim.Middleware for more information on middlewares.
-     * @see Pilgrim.Handler.Handler for more information on handlers.
+     * @see Pilgrim.Handler for more information on handlers.
      */
     export type WithoutSource<
       ContextInbound extends Pilgrim.Context.Constraint,

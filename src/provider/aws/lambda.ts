@@ -3,7 +3,7 @@ import { Pilgrim } from '../../main';
 import { LambdaEventSource } from './lambda/sources';
 
 /**
- * Alias of the supplied AWS Lambda handler.
+ * A type alias for the aws lambda handler.
  */
 export type LambdaHandler<Event, Response> = AwsLambda.Handler<Event, Response>;
 
@@ -14,16 +14,20 @@ export type LambdaHandler<Event, Response> = AwsLambda.Handler<Event, Response>;
  */
 export namespace Lambda {
   /**
-   * An event source identifier.
+   * An event for aws lambda.
+   *
+   * Use to have a validated and common way to access aws events by identifier.
    */
   export type Event<Identifier extends keyof Event.Supported> = Identifier;
 
   export namespace Event {
-    export type GetEvent<Identifier extends keyof Supported> = Event.Supported[Identifier]['Event'];
-    export type GetResponse<Identifier extends keyof Supported> = Event.Supported[Identifier]['Response'];
+    export type GetEvent<Identifier extends keyof Supported> = Lambda.Event.Supported[Identifier]['Event'];
+    export type GetResponse<Identifier extends keyof Supported> = Lambda.Event.Supported[Identifier]['Response'];
 
     /**
-     * Validated events that will be used across the library core.
+     * A validated mapping of all aws lambda event sources that are provided.
+     * This ensures all types will work internally and not cause TypeScript to default to any/never types.
+     * Internally this should be used instead of the the  `LambdaEventSource` mapping that can be extended.
      */
     export type Supported = (
       Pick<LambdaEventSource, {
@@ -38,13 +42,13 @@ export namespace Lambda {
   }
 
   /**
-   * Helper type for creating lambda sources from the given identifier.
+   * An event source for aws lambda.
    */
-  export type Source<Identifier extends keyof Event.Supported> = Source.Definition<Event.GetEvent<Identifier>>;
+  export type Source<Identifier extends keyof Lambda.Event.Supported> = Source.Definition<Lambda.Event.GetEvent<Identifier>>;
 
   export namespace Source {
     /**
-     * A constraint type that can be used to assert lambda sources.
+     * A lambda event source constraint.
      */
     export type Constraint = (
       Lambda.Source<
@@ -61,77 +65,108 @@ export namespace Lambda {
      * This has all the information about the functions execution.
      * This is combined with the event so middleware has access to function meta data.
      */
-    export type Definition<Event> = {
+    export type Definition<GivenEvent> = {
       readonly context: AwsLambda.Context;
-      readonly event: Event;
+      readonly event: GivenEvent;
     };
   }
 
   /**
    * A base context for lambda events.
+   *
+   * @see Pilgrim.Context
    */
   export type Context = {
-    request: {
-      id: string;
+    readonly request: {
+      readonly id: string;
     };
   };
 
+  /**
+   * A response that is tailored for aws events.
+   */
   export type Response<Event> = Pilgrim.Response<'aws:event', Event>;
 
   export namespace Response {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    export type Constraint = Response<any>;
+    /**
+     * A lambda response constraint.
+     */
+    export type Constraint = (
+      Lambda.Response<
+        // Any usage is allowed for constraints.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        any
+      >
+    );
   }
 
   /**
-   * An implementation of handler specialised for lambda.
+   * A pilgrim handler that is enhanced for aws lambda.
    *
-   * The context will always include the "Lambda.Context" as its provided by the core functionality.
+   * This can be used by providing a `Lambda.Event` and the response kind will be inferred.
+   * This is handy for handlers that do not need to implement other responses.
+   * If you want to be able to return other responses use a standard @{see Pilgrim.Handler} instead.
+   *
+   * The context will always include the `Lambda.Context` as its provided by the core functionality.
    * The handler however only needs to supply a partial context to allow for a better developer experience.
    *
-   * @see Pilgrim.Handler
+   * @see Lambda.Event for more information on lambda events and event sources.
+   * @see Pilgrim.Handler for more information on handlers.
+   * @see Pilgrim.Middleware for more information on middlewares.
    */
   export type Handler<
-    SourceIdentifier extends keyof Event.Supported,
+    EventIdentifier extends keyof Lambda.Event.Supported,
     Context extends Pilgrim.Context.Constraint,
   > = (
     Pilgrim.Handler<
       Context,
-      Event.GetResponse<SourceIdentifier>
+      Lambda.Event.GetResponse<EventIdentifier>
     >
   );
 
   export namespace Handler {
     /**
-     * An event source aware lambda handler.
+     * An extended handler function with the event source supplied within its tooling.
      *
-     * @see PilgrimHandler.Handler
-     * @see Pilgrim.Handler.SourceAware
+     * @see Lambda.Handler for the recommended lambda handler.
+     * @see Pilgrim.Handler for more information on handlers.
+     * @see Pilgrim.Middleware for more information on middleware.
      */
-    export type SourceAware<
-      Source extends Source.Constraint,
+    export type WithSource<
+      EventIdentifier extends keyof Lambda.Event.Supported,
       Context extends Pilgrim.Context.Constraint,
-      Response
-    > = Pilgrim.Handler.WithSource<Source, Context, Response>;
+    > = (
+      Pilgrim.Handler.WithSource<
+        Lambda.Source<EventIdentifier>,
+        Context,
+        Lambda.Event.GetResponse<EventIdentifier>
+      >
+    );
+
+    /**
+     * @deprecated use Lambda.Handler.WithSource instead.
+     */
+    export type SourceAware<Source extends Source.Constraint, Context extends Pilgrim.Context.Constraint, Response> = Pilgrim.Handler.WithSource<Source, Context, Response>;
   }
 
   /**
-   * A middleware specialised for lambda.
+   * A pilgrim middleware enhanced for aws lambda.
    *
-   * The context will always include the "Lambda.Context" as its provided by the core functionality.
-   * The handler however only needs to supply a partial context to allow for a better developer experience.
+   * The context will always include the `Lambda.Context` as its provided by the core functionality.
+   * The middleware however only needs to supply a partial context to allow for a better developer experience.
    *
-   * @see Pilgrim.Middleware for more information
+   * @see Pilgrim.Handler for more information on handlers.
+   * @see Pilgrim.Middleware for more information on middlewares.
    */
   export type Middleware<
-    EventIdentity extends keyof Event.Supported,
+    EventIdentifier extends keyof Lambda.Event.Supported,
     ContextInbound extends Pilgrim.Context.Constraint,
     ContextOutbound extends Pilgrim.Context.Constraint,
     ResponseInbound,
     ResponseOutbound,
   > = (
     Pilgrim.Middleware<
-      Source<EventIdentity>,
+      Lambda.Source<EventIdentifier>,
       ContextInbound,
       ContextOutbound,
       ResponseInbound,
@@ -141,23 +176,20 @@ export namespace Lambda {
 
   export namespace Middleware {
     /**
-    * A lambda middleware that doesn't require the event source.
+     * A middleware function that doesn't have care about the event source.
+     *
+     * This kind of middleware is commonly used when external services are used or a middleware uses existing context.
+     * In most cases this will not be the middleware you would want to use.
+     *
+     * @see Lambda.Middleware for more information on lambda middleware.
+     * @see Pilgrim.Middleware for more information on middlewares.
+     * @see Pilgrim.Handler for more information on handlers.
     */
     export type WithoutSource<
       ContextInbound extends Pilgrim.Context.Constraint,
       ContextOutbound extends Pilgrim.Context.Constraint,
       ResponseInbound,
       ResponseOutbound,
-    > = (
-      Pilgrim.Middleware<
-        // Any usage as this parameter shouldn't be used.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        any,
-        ContextInbound,
-        ContextOutbound,
-        ResponseInbound,
-        ResponseOutbound
-      >
-    );
+    > = Pilgrim.Middleware.WithoutSource<ContextInbound, ContextOutbound, ResponseInbound, ResponseOutbound>;
   }
 }
