@@ -1,8 +1,8 @@
 import * as AwsLambda from 'aws-lambda';
-import { PilgrimContext } from '../../application/context';
 import { PilgrimHandler } from '../../application/handler';
 import { PilgrimMiddleware } from '../../application/middleware';
 import { PilgrimResponse } from '../../application/response';
+import { Pilgrim } from '../../main';
 import { LambdaEventSource } from './lambda/sources';
 
 /**
@@ -96,7 +96,7 @@ export namespace Lambda {
    */
   export type Handler<
     SourceIdentifier extends keyof Event.Supported,
-    Context extends PilgrimContext.Context.Constraint,
+    Context extends Pilgrim.Context.Constraint,
   > = (
     PilgrimHandler.Handler<
       Context,
@@ -113,7 +113,7 @@ export namespace Lambda {
      */
     export type SourceAware<
       Source extends Source.Constraint,
-      Context extends PilgrimContext.Context.Constraint,
+      Context extends Pilgrim.Context.Constraint,
       Response
     > = PilgrimHandler.Handler.SourceAware<Source, Context, Response>;
   }
@@ -128,8 +128,8 @@ export namespace Lambda {
    */
   export type Middleware<
     EventIdentity extends keyof Event.Supported,
-    ContextInbound extends PilgrimContext.Context.Constraint,
-    ContextOutbound extends PilgrimContext.Context.Constraint,
+    ContextInbound extends Pilgrim.Context.Constraint,
+    ContextOutbound extends Pilgrim.Context.Constraint,
     ResponseInbound,
     ResponseOutbound,
   > = (
@@ -147,8 +147,8 @@ export namespace Lambda {
     * A lambda middleware that doesn't require the event source.
     */
     export type WithoutSource<
-      ContextInbound extends PilgrimContext.Context.Constraint,
-      ContextOutbound extends PilgrimContext.Context.Constraint,
+      ContextInbound extends Pilgrim.Context.Constraint,
+      ContextOutbound extends Pilgrim.Context.Constraint,
       ResponseInbound,
       ResponseOutbound,
     > = (

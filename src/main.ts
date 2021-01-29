@@ -1,4 +1,3 @@
-import { PilgrimContext } from './application/context';
 import { PilgrimHandler } from './application/handler';
 import { PilgrimMiddleware } from './application/middleware';
 import { PilgrimResponse } from './application/response';
@@ -45,7 +44,7 @@ export namespace Pilgrim {
    * @see Pilgrim.Handler.SourceAware for an event source aware handler implementation
    */
   export type Handler<
-    Context extends PilgrimContext.Context.Constraint,
+    Context extends Pilgrim.Context.Constraint,
     Response
   > = PilgrimHandler.Handler<Context, Response>;
 
@@ -60,7 +59,7 @@ export namespace Pilgrim {
      */
     export type SourceAware<
       Source,
-      Context extends PilgrimContext.Context.Constraint,
+      Context extends Pilgrim.Context.Constraint,
       Response
     > = PilgrimHandler.Handler.SourceAware<Source, Context, Response>;
   }
@@ -75,8 +74,8 @@ export namespace Pilgrim {
    */
   export type Middleware<
     Source,
-    ContextInbound extends PilgrimContext.Context.Constraint,
-    ContextOutbound extends PilgrimContext.Context.Constraint,
+    ContextInbound extends Pilgrim.Context.Constraint,
+    ContextOutbound extends Pilgrim.Context.Constraint,
     ResponseInbound,
     ResponseOutbound,
   > = PilgrimMiddleware.Middleware<Source, ContextInbound, ContextOutbound, ResponseInbound, ResponseOutbound>;
@@ -91,8 +90,8 @@ export namespace Pilgrim {
    * @see PilgrimHandler.Handler for more information on handler
      */
     export type WithoutSource<
-      ContextInbound extends PilgrimContext.Context.Constraint,
-      ContextOutbound extends PilgrimContext.Context.Constraint,
+      ContextInbound extends Pilgrim.Context.Constraint,
+      ContextOutbound extends Pilgrim.Context.Constraint,
       ResponseInbound,
       ResponseOutbound,
     > = (

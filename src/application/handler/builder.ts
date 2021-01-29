@@ -1,6 +1,6 @@
 import deepmerge from 'deepmerge';
 import { Grok } from '../../language/grok';
-import { PilgrimContext } from '../context';
+import { Pilgrim } from '../../main';
 import { PilgrimHandler } from '../handler';
 import { PilgrimMiddleware } from '../middleware';
 import { PilgrimProvider } from '../provider';
@@ -29,7 +29,7 @@ type PassThroughNextFunction = (
 export class HandlerBuilder<
   BuilderSource,
   BuilderProviderComposerFunction extends PilgrimProvider.CompositionFunction.Constraint<BuilderSource>,
-  BuilderContext extends PilgrimContext.Context.Constraint,
+  BuilderContext extends Pilgrim.Context.Constraint,
   BuilderResponse extends PilgrimResponse.Response.Constraint
 > {
   private readonly composer: BuilderProviderComposerFunction;

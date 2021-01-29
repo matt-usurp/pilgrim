@@ -1,5 +1,5 @@
 import { Grok } from '../language/grok';
-import { PilgrimContext } from './context';
+import { Pilgrim } from '../main';
 import { PilgrimHandler } from './handler';
 import { PilgrimResponse } from './response';
 
@@ -61,8 +61,8 @@ export namespace PilgrimMiddleware {
    */
   export type Invoker<
     Source,
-    ContextInbound extends PilgrimContext.Context.Constraint,
-    ContextOutbound extends PilgrimContext.Context.Constraint,
+    ContextInbound extends Pilgrim.Context.Constraint,
+    ContextOutbound extends Pilgrim.Context.Constraint,
     ResponseInbound,
     ResponseOutbound,
   > = (
@@ -128,8 +128,8 @@ export namespace PilgrimMiddleware {
    */
   export type Middleware<
     Source,
-    ContextInbound extends PilgrimContext.Context.Constraint,
-    ContextOutbound extends PilgrimContext.Context.Constraint,
+    ContextInbound extends Pilgrim.Context.Constraint,
+    ContextOutbound extends Pilgrim.Context.Constraint,
     ResponseInbound,
     ResponseOutbound,
   > = (

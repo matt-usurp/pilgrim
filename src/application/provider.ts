@@ -1,4 +1,4 @@
-import { PilgrimContext } from './context';
+import { Pilgrim } from '../main';
 import { PilgrimHandler } from './handler';
 import { PilgrimResponse } from './response';
 
@@ -29,7 +29,7 @@ export namespace PilgrimProvider {
    */
   export type InvocationFunction<
     Source,
-    Context extends PilgrimContext.Context.Constraint,
+    Context extends Pilgrim.Context.Constraint,
     Response
   > = PilgrimHandler.Handler.SourceAware<Source, Context, Response>;
 
@@ -40,7 +40,7 @@ export namespace PilgrimProvider {
    */
   export type CompositionFunction<
     Source,
-    InvokerContext extends PilgrimContext.Context.Constraint,
+    InvokerContext extends Pilgrim.Context.Constraint,
     InvokerResponse extends PilgrimResponse.Response.Constraint,
     ProviderFunction extends FunctionConstraint,
   > = (invoker: InvocationFunction<Source, InvokerContext, InvokerResponse>) => ProviderFunction;
