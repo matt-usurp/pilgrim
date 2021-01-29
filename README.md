@@ -2,13 +2,20 @@
 
 A complete type-safe implementation of middleware and handlers for serverless functions.
 
-## Usage
-
-> The package is in a non-1.0 release state.
-> The public API and types might change or be moved within any minor version change.
+> The package is currently in a pre-1.0 release state.
+> The public API (including types) might change or be removed in any minor version change.
 > A change log will be provided where possible to allow more frictionless upgrade.
 
-We use a builder kind of pattern to construct a middleware and handler chain.
+## Usage
+
+> Currently only `aws lambda` is supported.
+> The api is abstract enough to support all other providers.
+
+A chaining pattern is used to allow for the types to mutate as things are provided.
+The `use()` function allows for middleware to be declared.
+The `handle()` function finalises the chain with a handler function.
+
+For example:
 
 ```ts
 import { aws, response } from '@matt-usurp/pilgrim/provider/aws';
@@ -19,29 +26,31 @@ export const target = aws<'aws:apigw:proxy:v2'>()
   });
 ```
 
-The response from the chain (after `handle()` is called) is a function that can be executed by the provider (`AWS Lambda` in this case).
-A context is provided to our custom handler, but it has no knowledge of what called it and therefore does not have access to the event.
-To provide context to our handler we use middleware.
+Once the chain has been finalised the response is a function that can be executed by the provider (in this case `aws()` returns a lambda handler).
+
+## Context
+
+A handler only needs to know so much and therefore it receives its own parameters, know as `context` in this case.
+This means that handlers do not know about the original event source data.
+Instead `Middleware` can be used to provide additional context.
+
+A simple example:
 
 ```ts
 import { Pilgrim } from '@matt-usurp/pilgrim';
 import { Lambda } from '@matt-usurp/pilgrim/provider/aws';
 
-// Providing the middleware with knowledge of the kind of event source
-// This provides all places used with knowledge of the "APIGatewayProxyEventV2" event
-type LambdaEventSource = Lambda.Event<'aws:apigw:proxy:v2'>;
-
 type MyNewContext = { user: { id: string; }; };
-type MyMiddleware = Lambda.Middleware<LambdaEventSource, Pilgrim.Inherit, MyNewContext, Pilgrim.Inherit, Pilgrim.Inherit>;
+type MyMiddleware = Lambda.Middleware<'aws:apigw:proxy:v2', Pilgrim.Inherit, MyNewContext, Pilgrim.Inherit, Pilgrim.Inherit>;
 
 export const withUserData: MyMiddleware = async ({ event, next }) => {
-  // Remember, "event" is APIGatewayProxyEventV2 here.
+  // Note, "event" is APIGatewayProxyEventV2 here due to specifying "aws:apigw:proxy:v2"
 
   const context = {
     ...context,
 
     user: {
-      id: await resolveUserId(event.headers['authorization']),
+      id: await validateUserId(event.headers['authorization']),
     },
   };
 
@@ -51,15 +60,16 @@ export const withUserData: MyMiddleware = async ({ event, next }) => {
 }
 ```
 
-Middleware are asyncronous so they can delay the handler execution.
-This means you can perform tasks to resolve information (in this case user id) and provide that information to the next context.
+All middleware are asyncronous which allows them to delay the execution and wait for a process.
+This means you can perform tasks to resolve information and provide that to the next context.
+In the example above, `validateUserId()` could communicate with the database to make sure the user id exists.
 
-> Middleware are provided with the `next()` function which allows for the chaining to work.
-> The response of the next function is the return value of the next middleware (or the handler).
+> All middleware are provided with the `next()` function which allows for the chaining to work.
+> The response of the next function is the return value of the future middleware (or the handler).
 > If your middleware wishes too--it can return its own value and not call `next()`.
 > This would be useful for cases where some validation failed and you want to return a 404 or something.
 
-This can be used within our original code sample by adding a `use()` call.
+Our new middleware can be used within our original code sample by adding a `use()` call before the handler is given.
 
 ```ts
 import { response } from '@matt-usurp/pilgrim/provider/aws';
@@ -73,60 +83,68 @@ export const target = aws<'aws:apigw:proxy:v2'>()
   });
 ```
 
-### Response
+## Response
 
-All handlers are required to return a wrapped response.
-There are some generic helpers exported from main for crafting common responses or creating your own.
+All middleware and handlers are expected to wrap their responses.
+This is done so middleware can have a common discriminator to test when doing response mutations.
+Some generic helpers are exported from the main namespace for crafting common responses or creating your own.
+
+For example, satisfying a nothing response instead of using `void`.
 
 ```ts
 import { response } from '@matt-usurp/pilgrim';
 
-response.nothing();
+response.nothing(); // Pilgrim.Response.Nothing
 ```
 
-When creating responses you will also want to craft a type for it.
-There is a response type helper exposed under `Pilgrim.Response`, this can then be provided via middleware to allow the application to transform it.
+When creating your own responses you will also want to define a type for it.
+The response type helper `Pilgrim.Response` should be used to create wrapped responses.
 
 ```ts
 import { Pilgrim, response } from '@matt-usurp/pilgrim';
 
 type ColourResponse = Pilgrim.Response<'colours', { colours: string[]; }>;
 
-// Creating a straight up response.
+// Creates the response.
 const response = response.create<ColourResponse>('colours', { colours: ['red', 'green', 'blue'] });
-response; // type MyResponse
+response; // type ColourResponse
 
 // Creating a factory function for constructing the response.
 const factory = response.factory<ColourResponse>('colours');
 const response = factory({ colours: ['orange'] });
-response; // type MyResponse
+response; // type ColourResponse
 ```
 
-Note that the aws lambda `@matt-usurp/pilgrim/provider/aws` namespace also exports `response` which are tailored for aws responses.
-Currently all responses are wrapped in a `aws:event` response that can be created through `response.event()`.
+Note that `@matt-usurp/pilgrim/provider/aws` also exports `response` (the same as the main import) with some additional functions tailored for aws responses.
+Currently all aws responses are wrapped in an `aws:event` response that can be created through `response.event()`.
 
-#### Middleware
+> Our new responses can then be used with middleware to allow it in the execution chain.
+> This is a fairly complex topic but can be better explained by reading the `aws-apigw-http-response` example and viewing the `withPilgrimHttpResponseSupport` middleware provided in the aws module.
+
+## Middleware
 
 Middleware can introduce new responses by specifying them in the `ResponseInbound` generic parameter.
-It is important to note that when specifying a new response you must also supply a `ResponseOutput` as this is what transformation needs implementing.
+It is important to note, when specifying a new response you must also supply a `ResponseOutput` to indicate what transformation is happening within the middleware.
+
+For example, lets create a middleware that will allow use of the custom response `ColourResponse` defined above.
 
 ```ts
 import { Pilgrim, response } from '@matt-usurp/pilgrim';
 
-type MyMiddleware = (
-  Pilgrim.Middleware<
-    'aws:some:event',
-    Pilgrim.Inherit,
-    Pilgrim.Inherit,
-    ColourResponse,
-    Pilgrim.Response.HttpResponse
+type ColourResponseMiddleware = (
+  Pilgrim.Middleware.WithoutSource<
+    Pilgrim.Inherit, // we do not require context
+    Pilgrim.Inherit, // we do not change context
+    ColourResponse, // allowing ColourResponse inbound
+    Pilgrim.Response.Http // transforming to a http response
   >
 );
 
-const middleware: MyMiddleware = async({ context, next }) => {
+const middleware: ColourResponseMiddleware = async({ context, next }) => {
   const result = await next(context);
 
-  // transform ColourResponse into HttpResponse.
+  // using the discrimnator "type" to detect our colour response.
+  // TS should do all the type inferance for you here, and resolve to ColourResponse.
   if (result.type === 'colours') {
     return response.http({
       status: 200,
@@ -134,22 +152,25 @@ const middleware: MyMiddleware = async({ context, next }) => {
     });
   }
 
-  // returns the pseudo "inherit" response.
+  // returns any other response.
   return result;
 }
 ```
 
-When this middleware is implemented all middleware and handlers in the chain can make use of `ColourResponse`.
+This middleware can now be used (with `use()`) in the execution chain.
+All middleware and handlers next in the chain can safely return the `ColourResponse`.
+This is enforced through types and will cause build failures if the middleware is not used.
 
 > There is an "inherit" response which should be considered a pseudo response.
 > You cannot test for "inherit" as it doesn't actually exist.
 > This might show up in middlewares representing "any" response you have not manually typed.
+> Simply return this response in a default block.
 > This allows middleware to be partially aware of responses.
 
 ### Further reading
 
 * For more examples see the `/examples` directory.
-* For supported events (such as `aws:apigw:proxy:v2`) see the `/src/provider/aws/lambda` directory. Note that this is an extensible interface so if you event is missing you can add it yourself by doing the same thing. However, do feel free to PR that back in to the project!
+* For supported events (such as `aws:apigw:proxy:v2`) see the `/src/provider/aws/lambda/source` directory. Note that this is an extensible interface so if you event is missing you can add it yourself by doing the same thing. However, do feel free to PR that back in to the project!
 
 ## Roadmap
 
