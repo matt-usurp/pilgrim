@@ -1,0 +1,40 @@
+name: Release Package
+
+on:
+  push:
+    tags:
+      - v*.*.*
+
+jobs:
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '15'
+          registry-url: 'https://npm.pkg.github.com'
+
+      - run: node -v
+      - run: npm -v
+
+      - uses: actions/cache@v2
+        with:
+          path: '~/.npm'
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - run: npm ci --ignore-scripts
+      - run: make build
+
+      - uses: matt-usurp/npm-publish@v1
+        with:
+          version: ${{ github.ref }}
+          directory: build/workspace
+          access: restricted
+          execute: true
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.TOKEN_NPM_PUBLISH }}
