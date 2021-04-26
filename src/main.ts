@@ -86,11 +86,6 @@ export namespace Pilgrim {
       Context extends Pilgrim.Context.Constraint,
       Response
     > = HandlerFunction<HandlerToolingWithSource<Source, Context>, Response>;
-
-    /**
-     * @deprecated use Pilgrim.Handler.WithSource
-     */
-    export type SourceAware<Source, Context extends Pilgrim.Context.Constraint, Response> = WithSource<Source, Context, Response>;
   }
 
   /**

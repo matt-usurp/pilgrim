@@ -206,9 +206,4 @@ export class HandlerBuilder<
       };
     }, executor);
   }
-
-  /**
-   * @deprecated use handleWithSource() instead.
-   */
-  handleSourceAware = this.handleWithSource.bind(this);
 }

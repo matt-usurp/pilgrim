@@ -109,18 +109,3 @@ export type MiddlewareTooling<Source, Context, NextFunction> = (
     readonly next: NextFunction;
   }
 );
-
-/**
- * @deprecated use Pilgrim.Middleware.
- */
-export namespace PilgrimMiddleware {
-  /**
-   * @deprecated use Pilgrim.Inherit instead.
-   */
-  export type Inherit = Pilgrim.Inherit;
-
-  /**
-   * @deprecated use Pilgrim.Middleware instead.
-   */
-  export type Middleware<Source, ContextInbound extends Pilgrim.Context.Constraint, ContextOutbound extends Pilgrim.Context.Constraint, ResponseInbound, ResponseOutbound> = Pilgrim.Middleware<Source, ContextInbound, ContextOutbound, ResponseInbound, ResponseOutbound>;
-}

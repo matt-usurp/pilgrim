@@ -1,5 +1,3 @@
-import { Pilgrim } from '../main';
-
 /**
  * The generic pattern for handler functions.
  */
@@ -23,20 +21,3 @@ export type HandlerToolingWithSource<Source, Context> = (
     readonly source: Source;
   }
 );
-
-/**
- * @deprecated use Pilgrim.Handler instead.
- */
-export namespace PilgrimHandler {
-  /**
-   * @deprecated use Pilgrim.Handler instead.
-   */
-  export type Handler<Context extends Pilgrim.Context.Constraint, Response> = Pilgrim.Handler<Context, Response>;
-
-  export namespace Handler {
-    /**
-     * @deprecated use Pilgrim.Handler.WithSource instead.
-     */
-    export type SourceAware<Source, Context extends Pilgrim.Context.Constraint, Response> = Pilgrim.Handler.WithSource<Source, Context, Response>;
-  }
-}

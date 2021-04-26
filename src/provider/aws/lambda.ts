@@ -142,11 +142,6 @@ export namespace Lambda {
         Lambda.Event.GetResponse<EventIdentifier>
       >
     );
-
-    /**
-     * @deprecated use Lambda.Handler.WithSource instead.
-     */
-    export type SourceAware<Source extends Source.Constraint, Context extends Pilgrim.Context.Constraint, Response> = Pilgrim.Handler.WithSource<Source, Context, Response>;
   }
 
   /**
