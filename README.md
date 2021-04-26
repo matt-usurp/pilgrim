@@ -1,21 +1,19 @@
 # Pilgrim
 
-A complete type-safe implementation of middleware and handlers for serverless functions.
+A type-safe serverless handler and middleware implementation.
 
-> The package is currently in a pre-1.0 release state.
-> The public API (including types) might change or be removed in any minor version change.
-> A change log will be provided where possible to allow more frictionless upgrade.
+Currently supporting `aws-lambda` natively but the internal API is abstracted enough to be able to support other providers.
+In version `2.x` I hope to extract the providers out to their own packages for a better developer experience.
 
 ## Usage
 
-> Currently only `aws lambda` is supported.
-> The api is abstract enough to support all other providers.
+The core api is around the `HandlerBuilder` which focuses on mutating a context object through middlewares.
+This exposes a `.use()` function that allows for middlewares to apply mutations to the expected types given to the handler.
+The `.handle()` function finalises the chain and constructs an entrypoint for the service provider to execute.
 
-A chaining pattern is used to allow for the types to mutate as things are provided.
-The `use()` function allows for middleware to be declared.
-The `handle()` function finalises the chain with a handler function.
+> Service provider implementations expose pre-defined instances of `HandlerBuilder` with types valid for that provider.
 
-For example:
+An example of an `aws-lambda` handler:
 
 ```ts
 import { aws, response } from '@matt-usurp/pilgrim/provider/aws';
@@ -26,15 +24,17 @@ export const target = aws<'aws:apigw:proxy:v2'>()
   });
 ```
 
-Once the chain has been finalised the response is a function that can be executed by the provider (in this case `aws()` returns a lambda handler).
+Which `aws-lambda` can execute by targetting the `filename.target` exported handler.
 
 ## Context
 
-A handler only needs to know so much and therefore it receives its own parameters, know as `context` in this case.
-This means that handlers do not know about the original event source data.
-Instead `Middleware` can be used to provide additional context.
+A handler is provided a context object that is restricted in what is available out of the box.
+However it is possible to augement the context by providing implementations of `Pilgrim.Middleware` that access the event source or external services.
 
-A simple example:
+> Providers may have augmented types available for assisting with making these middleware.
+> For example, `aws-lambda` based middleware can make use of the `Lambda.Middleware` exposed by the provider implementation.
+
+An example middleware for `aws-lambda` might look like:
 
 ```ts
 import { Pilgrim } from '@matt-usurp/pilgrim';
@@ -43,14 +43,16 @@ import { Lambda } from '@matt-usurp/pilgrim/provider/aws';
 type MyNewContext = { user: { id: string; }; };
 type MyMiddleware = Lambda.Middleware<'aws:apigw:proxy:v2', Pilgrim.Inherit, MyNewContext, Pilgrim.Inherit, Pilgrim.Inherit>;
 
-export const withUserData: MyMiddleware = async ({ event, next }) => {
-  // Note, "event" is APIGatewayProxyEventV2 here due to specifying "aws:apigw:proxy:v2"
+export const withUserData: MyMiddleware = async ({ source, next }) => {
+  // Note, "source.event" is APIGatewayProxyEventV2 due to specifying "aws:apigw:proxy:v2"
+  // Additionally, "source.context" is the Lambda function context.
 
+  const header = source.event.headers['authorization'];
   const context = {
     ...context,
 
     user: {
-      id: await validateUserId(event.headers['authorization']),
+      id: await validateUserId(header),
     },
   };
 
@@ -60,8 +62,8 @@ export const withUserData: MyMiddleware = async ({ event, next }) => {
 }
 ```
 
-All middleware are asynchronous which allows them to delay the execution and wait for a process.
-This means you can perform tasks to resolve information and provide that to the next context.
+All middleware are asynchronous which allows them to delay the execution and wait for processes.
+This means you can perform tasks to resolve information and merge that with the handler context.
 In the example above, `validateUserId()` could communicate with the database to make sure the user id exists.
 
 > All middleware are provided with the `next()` function which allows for the chaining to work.
@@ -69,7 +71,7 @@ In the example above, `validateUserId()` could communicate with the database to 
 > If your middleware wishes too--it can return its own value and not call `next()`.
 > This would be useful for cases where some validation failed and you want to return a 404 or something.
 
-Our new middleware can be used within our original code sample by adding a `use()` call before the handler is given.
+Our new middleware can be used within our example handler code above by adding a `.use()` call before the `.handler()`.
 
 ```ts
 import { response } from '@matt-usurp/pilgrim/provider/aws';
@@ -77,7 +79,7 @@ import { response } from '@matt-usurp/pilgrim/provider/aws';
 export const target = aws<'aws:apigw:proxy:v2'>()
   .use(withUserData)
   .handle(async ({ context }) => {
-    context.user.id; // what ever was resolved from middleware.
+    context.user.id; // user id is now available in context
 
     return response.event({ ... });
   });
@@ -177,3 +179,4 @@ This is enforced through types and will cause build failures if the middleware i
 * Introduce examples for other providers such as `azure` and `gcp`.
 * Flesh out test cases to ensure all execution branches are covered.
 * Breakout documentation in to less overwhelming wall of text.
+* Breakout provider implementations
