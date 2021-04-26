@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.0.0](https://github.com/matt-usurp/pilgrim/compare/v0.3.6...v1.0.0) (2021-04-26)
+
+This release marks the library as stable (its used in various production cases) and good for general use.
+All deprecations that were previously marked have been removed.
+Documentation has been made up-to-date and should resemble the current API.
+
+### Features
+
+* remove deprecated code ([be53662](https://github.com/matt-usurp/pilgrim/commit/be53662f7081420192dd76ced79019ff7b156f32))
+* switch responses to pilgrim main namespace ([a550214](https://github.com/matt-usurp/pilgrim/commit/a55021450e1515d03c66b691ef10c47ef7256e9d))
+
 ### [0.3.6](https://github.com/matt-usurp/pilgrim/compare/v0.3.5...v0.3.6) (2021-01-29)
 
 
