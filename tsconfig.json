@@ -2,7 +2,7 @@
   "compilerOptions": {
     "moduleResolution": "node",
     "module": "commonjs",
-    "target": "es2018",
+    "target": "es2020",
 
     "allowJs": false,
     "checkJs": false,
