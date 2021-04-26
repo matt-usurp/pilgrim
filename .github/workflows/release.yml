@@ -33,8 +33,7 @@ jobs:
       - uses: matt-usurp/npm-publish@v1
         with:
           version: ${{ github.ref }}
-          directory: build/workspace
-          access: restricted
+          directory: 'build/workspace'
           execute: true
         env:
           NODE_AUTH_TOKEN: ${{ secrets.TOKEN_NPM_PUBLISH }}
